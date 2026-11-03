@@ -27,6 +27,11 @@ export class TradingPage extends BasePage {
   async selectSymbol(symbol: string): Promise<SymbolDetail> {
     await this.symbolSearch.fill(symbol);
     const item = this.searchResults.getByTestId('symbol-input-search-items-symbol').getByText(symbol, { exact: true });
-    return captureResult<SymbolDetail>(this.page, 'symbolDetail', () => item.click());
+    // Only this symbol's response: the page may still be loading the default symbol's detail.
+    const spec = await captureResult<SymbolDetail>(this.page, 'symbolDetail', () => item.click(), {
+      urlIncludes: `symbol=${encodeURIComponent(symbol)}`,
+    });
+    if (spec.symbol !== symbol) throw new Error(`Expected detail for ${symbol}, got ${spec.symbol}`);
+    return spec;
   }
 }

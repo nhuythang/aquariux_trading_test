@@ -22,7 +22,8 @@ The brief lists 7 functional areas. Exploration of the demo account (MT5 bridge,
 | Role | Symbol | Why |
 | --- | --- | --- |
 | Primary | **XAUUSD** | Live feed, 2 decimals, `stopsLevel` 0, min/step 0.1 lot |
-| Second / third symbol (bulk, netting) | XAGUSD, GBPJPY | Live, different symbols avoid netting |
+| Second / third symbol (bulk, netting) | XAGUSD, XTIUSD | Live and tradable from the web (`tradableExeMode: true`); different symbols avoid netting |
+| Not tradable from the web | GBPJPY | Market open but `tradableExeMode: false`: submit stays on "STAY TUNED" |
 | Market closed (live, optional) | first symbol with `status: CLOSED` at run time (AUDCAD at exploration) | Real closed-market behaviour |
 | Avoid | USDCAD (frozen feed), EURUSD ("test" symbol), `*.Master` | Unreliable prices |
 
@@ -52,9 +53,9 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | --- | --- | --- | --- | --- | --- |
 | MO-01 | Buy XAUUSD 0.2 lot with SL below / TP above entry | Positive | P1 | UI | Position row and API record: symbol, BUY, 0.2 lot, SL, TP match input; entry ≈ Ask at submit |
 | MO-02 | Sell XAUUSD 0.2 lot with SL above / TP below entry | Positive | P1 | UI | Same checks for SELL; entry ≈ Bid |
-| MO-03 | Buy with SL above current price (wrong side) | Negative | P1 | UI | Order not placed (no POST success / no position), validation or error shown |
+| MO-03 | Buy with SL above current price (wrong side) | Negative | P1 | UI | Inline message shown; no confirmation step; no trade request |
 | MO-04 | Sell with TP above current price (wrong side) | Negative | P2 | UI | As MO-03 |
-| MO-05 | Volume below min (0.05) and not step-aligned (0.15) | Boundary | P2 | UI | Submit blocked or error; no position |
+| MO-05 | Volume below min (0.05) → message, no confirmation, no request (05a); not step-aligned (0.15) → rounded to the step on blur (05b) | Boundary | P2 | UI | See R11, R12 |
 | MO-06 | Market order without SL/TP | Positive | P3 | UI | Position with empty SL/TP (`0` in API, `--` in UI) |
 | MO-07 | Confirmation dialog shows the same values as the form; Cancel places nothing | Positive | P2 | UI | Dialog symbol/side/volume/SL/TP = form; after Cancel, counts unchanged |
 

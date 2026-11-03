@@ -20,7 +20,7 @@ No specification was provided, and the hiring team asked me to work from my own 
 | --- | --- | --- |
 | Platform | Web Trader only, desktop Chromium | The web client exposes all 7 functional areas. Mobile and cross-browser runs add cost but no new business coverage in 2 days. |
 | Languages | TypeScript + Playwright for UI E2E; Python + pytest for data validation | Each language where it is strongest: Playwright for browser + network control, Python/pydantic for schema and rule checks on the captured data. |
-| Instruments | **XAUUSD** primary; XAGUSD and GBPJPY as extra symbols; a symbol reporting `CLOSED` for market-closed checks | The demo account offers only Forex and Commodities (no crypto). XAUUSD has a live feed, 2-decimal prices, no stop level and a 0.1-lot step that allows a clean partial close (0.2 → 0.1). |
+| Instruments | **XAUUSD** primary; XAGUSD and XTIUSD as extra symbols; GBPJPY as an open-but-not-tradable symbol; a symbol reporting `CLOSED` for market-closed checks | The demo account offers only Forex and Commodities (no crypto), and only symbols with `tradableExeMode: true` accept web orders. XAUUSD has a live feed, 2-decimal prices, no stop level and a 0.1-lot step that allows a clean partial close (0.2 → 0.1). |
 | Instrument specs | Read at run time from `GET /api/market/v1/symbol/detail` | Tick size, min/step/max lot, stop level, order types and expiry types come from the platform itself, so tests survive configuration changes. |
 | Account model | One demo account, **netting** (`horizonAccountType: NET`) | Same-symbol same-side orders merge. Tests that need several positions use different symbols. |
 | Market closure | `@live` vs `@mocked` tags; `page.route` mocks symbol status and trade errors | FX and metals trade Mon–Fri only. Mocked tests run at any time and in CI without credentials. |
@@ -126,6 +126,7 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 │   │   │   ├── models.ts              # Position, PendingOrder, HistoryPosition, Order, Deal, SymbolSpec
 │   │   │   ├── price.ts               # rounding to pointStep, offsets from Bid/Ask
 │   │   │   └── rules.ts               # SL/TP side, pending side, volume step, P/L reconciliation
+│   │   ├── flows/orders.ts            # multi-step user actions reused by specs (place, invalid submit, wait)
 │   │   ├── fixtures/
 │   │   │   ├── auth.setup.ts
 │   │   │   └── trading.fixture.ts     # page objects, oneClick state, tracked orders + cleanup

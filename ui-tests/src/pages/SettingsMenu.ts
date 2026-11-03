@@ -37,7 +37,12 @@ export class SettingsMenu extends BasePage {
       const agree = this.page.getByRole('button', { name: /agree and continue/i });
       const target = enabled ? this.oneClickOn : this.oneClickOff;
       await agree.or(target).first().waitFor();
-      if (await agree.isVisible()) await agree.click();
+      if (await agree.isVisible()) {
+        await agree.click();
+        await agree.waitFor({ state: 'hidden' });
+      }
+      // Accepting the terms closes the menu; reopen it to confirm the new state.
+      await this.openMenu();
       await target.waitFor();
     }
     await this.closeMenu();

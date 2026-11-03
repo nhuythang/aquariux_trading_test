@@ -13,13 +13,17 @@ export class ClosePositionDialog extends BasePage {
     super(page);
   }
 
-  /** Partial close when `lots` is below the position size. */
+  /** Partial close when `lots` is below the position size. Typed, because the input ignores fill(). */
   async setVolume(lots: number): Promise<void> {
-    await this.volume.fill(String(lots));
+    await this.typeInto(this.volume, String(lots));
   }
 
-  async closeAll(): Promise<void> {
-    await this.maxButton.click();
+  /**
+   * Close the whole position. MAX does not always populate the field when clicked right after the
+   * dialog opens, so the full size is typed instead.
+   */
+  async closeAll(positionLots: number): Promise<void> {
+    await this.setVolume(positionLots);
   }
 
   async confirm(): Promise<void> {

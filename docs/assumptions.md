@@ -17,6 +17,7 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 | E7 | API access | Observed | The app authenticates every `/api/` call with `Authorization: Bearer <jwt>` (not the value stored in `localStorage.token`). Calls without that header return 401. The UI suite reuses the header from the app's own traffic for setup, cleanup and data reads. |
 | E8 | Network | Observed | Some ISP DNS resolvers (seen on VNPT) do not resolve `*.aquariux.com`. Using a public resolver (8.8.8.8 / 1.1.1.1) fixes it. |
 | E9 | Live prices | Observed | Prices move every tick. Entry-price checks use a tolerance (spread plus a small slippage margin), never exact equality with the price seen before submit. |
+| E10 | Web-tradable symbols | Observed | Only symbols with `tradableExeMode: true` accept orders from the web client (e.g. XAUUSD, XAGUSD, XTIUSD, UKOIL, several FX pairs). Others, such as GBPJPY, show an open market but keep the submit button on "STAY TUNED". |
 
 ## 2. Business rules
 
@@ -32,6 +33,8 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 | R8 | On the netting account, a same-symbol same-side order merges into the existing position. | Assumed from E5 (to confirm) | BO-01 design |
 | R9 | Minimum SL/TP distance = `stopsLevel` points (XAUUSD: 0, GBPJPY: 80). | Observed (`symbol/detail`) | Price offsets |
 | R10 | Pending orders use Fill Policy **Return**; market orders default to **Fill or Kill**. | Observed | Order panel defaults |
+| R11 | Invalid SL/TP or volume shows an inline message ("Stop Loss must be less than Sell Price.", "Minimum volume is 0.1."). The submit button is **not** disabled, so the tests check that the order cannot reach the confirmation step and that no trade request is sent. | Observed | MO-03, MO-04, MO-05a |
+| R12 | The volume input rounds a value that is not a multiple of the step when it loses focus (0.15 → 0.1). | Observed | MO-05b |
 
 ## 3. Interpretation of the brief
 

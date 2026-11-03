@@ -24,10 +24,12 @@ export async function captureResult<T>(
   page: Page,
   name: EndpointName,
   action: () => Promise<unknown>,
-  timeout = 20_000,
+  options: { timeout?: number; urlIncludes?: string } = {},
 ): Promise<T> {
   const matcher = endpoints[name];
-  const [response] = await Promise.all([page.waitForResponse((r) => matches(r, matcher), { timeout }), action()]);
+  const { timeout = 20_000, urlIncludes } = options;
+  const predicate = (r: Response) => matches(r, matcher) && (!urlIncludes || r.url().includes(urlIncludes));
+  const [response] = await Promise.all([page.waitForResponse(predicate, { timeout }), action()]);
   return unwrap<T>(response, name);
 }
 

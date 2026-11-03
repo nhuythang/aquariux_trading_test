@@ -59,12 +59,18 @@ export class OrderPanel extends BasePage {
   /** Dropdown options have no testid; they are picked by text inside the open dropdown only. */
   async selectOrderType(label: OrderTypeLabel): Promise<void> {
     await this.orderType.click();
-    await this.orderType.getByText(label, { exact: true }).click();
+    // The current value is also rendered as text; the open list comes after it.
+    await this.orderType.getByText(label, { exact: true }).last().click();
   }
 
   async selectExpiry(label: ExpiryLabel): Promise<void> {
     await this.expiry.click();
-    await this.expiry.getByText(label, { exact: true }).click();
+    await this.expiry.getByText(label, { exact: true }).last().click();
+  }
+
+  /** Inline validation message under a field, e.g. "Stop Loss must be less than Sell Price." */
+  validationMessage(text: RegExp): Locator {
+    return this.root.getByText(text);
   }
 
   /** Live quote shown on the Buy/Sell buttons. */
@@ -72,15 +78,24 @@ export class OrderPanel extends BasePage {
     return { bid: await this.numberOf(this.bidPrice), ask: await this.numberOf(this.askPrice) };
   }
 
+  async setVolume(lots: number | string): Promise<void> {
+    await this.typeInto(this.volume, String(lots));
+  }
+
   /** Fill the form. Prices are entered as prices, never points (points are recomputed from the live quote). */
   async fill(form: OrderForm): Promise<void> {
     await this.selectOrderType(form.type);
     await this.selectSide(form.side);
-    await this.volume.fill(String(form.volume));
+    await this.setVolume(form.volume);
     if (form.price !== undefined) await this.price.fill(String(form.price));
     if (form.stopLoss !== undefined) await this.stopLossPrice.fill(String(form.stopLoss));
     if (form.takeProfit !== undefined) await this.takeProfitPrice.fill(String(form.takeProfit));
     if (form.expiry) await this.selectExpiry(form.expiry);
+  }
+
+  /** "PLACE BUY ORDER" / "PLACE SELL ORDER" when the form is valid, "STAY TUNED" otherwise. */
+  async submitLabel(): Promise<string> {
+    return (await this.submitButton.innerText()).trim();
   }
 
   async submit(): Promise<void> {

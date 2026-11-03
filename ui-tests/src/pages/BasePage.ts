@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { parseUiNumber } from '@src/domain/price';
 
 /** Shared helpers for page objects and components. Holds no assertions. */
@@ -14,12 +14,24 @@ export abstract class BasePage {
     return parseUiNumber((await locator.innerText()).trim());
   }
 
-  /** Innermost element that contains `title` and at least one button: the dialog's root. */
+  /**
+   * Replace an input's value by typing it, as a user would. Some inputs (volume) only apply their
+   * formatting and step rules to key events, so `fill()` is not enough for them.
+   */
+  protected async typeInto(input: Locator, text: string): Promise<void> {
+    // The panel may re-render right after a tab or symbol change and drop what was typed, so the
+    // value is checked and typed again until it sticks.
+    await expect(async () => {
+      await input.click();
+      await input.press('ControlOrMeta+a');
+      await input.press('Backspace');
+      await input.pressSequentially(text);
+      await expect(input).toHaveValue(text, { timeout: 1_000 });
+    }).toPass({ timeout: 10_000 });
+  }
+
+  /** A modal (`role="dialog"`) identified by its title text. */
   protected dialogByTitle(title: string): Locator {
-    return this.page
-      .locator('div')
-      .filter({ has: this.page.getByText(title, { exact: true }) })
-      .filter({ has: this.page.getByRole('button') })
-      .last();
+    return this.page.getByRole('dialog').filter({ has: this.page.getByText(title, { exact: true }) });
   }
 }

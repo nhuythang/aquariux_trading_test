@@ -115,13 +115,14 @@ export const test = base.extend<TradingFixtures>({
     if (created.positions.size === 0) return;
     await assets.openPositions.open();
     for (const orderId of created.positions.keys()) {
-      if (!(await api.openPosition(orderId))) continue;
+      const position = await api.openPosition(orderId);
+      if (!position) continue;
       const row = assets.openPositions.row(orderId);
       await assets.openPositions.close(orderId);
       // With One-Click Trading on, Close acts immediately; otherwise a dialog asks for the volume.
       await dialogs.close.root.or(row).first().waitFor();
       if (await dialogs.close.confirmButton.isVisible()) {
-        await dialogs.close.closeAll();
+        await dialogs.close.closeAll(position.lotSize);
         await dialogs.close.confirm();
       }
       await row.waitFor({ state: 'detached' });

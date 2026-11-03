@@ -18,7 +18,7 @@ export class OneClickPanel extends BasePage {
   }
 
   async setVolume(lots: number): Promise<void> {
-    await this.volume.fill(String(lots));
+    await this.typeInto(this.volume, String(lots));
   }
 
   /** Sends the order immediately: there is no confirmation dialog in one-click mode. */
