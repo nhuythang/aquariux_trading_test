@@ -88,10 +88,11 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 | **Selector policy:** `data-testid` → role/label → visible text inside a scoped component. No XPath, no CSS chains. | The app already exposes testids for most controls; dropdown options do not, so they are chosen by text inside the open dropdown only. |
 | **Domain layer without Playwright.** Price rounding, side rules (SL/TP and pending price direction), volume validation, P/L reconciliation. | Pure functions can be reused by fixtures, page objects and tests, and are easy to review. |
 | **Fixtures own state and cleanup.** `oneClick` sets the toggle to the state a test needs; `orders` records every ID a test creates and closes/deletes only those in teardown. | Tests are independent and leave the shared account clean, even on failure. |
+| **REST client for setup, cleanup and reads.** `TraderApi` reuses the `Authorization: Bearer` header from the app's own requests and calls the same endpoints with `page.request`. | Tests verify UI actions, but read state and tidy up through the API: faster and independent of table rendering. No second login and no token handling in test code. |
 | **Login once.** A setup project logs in from `.env` and saves `storageState` (the session token lives in `localStorage`). | Saves time and keeps credentials out of every spec. |
 | **Typed config, fail fast.** `config/env.ts` validates `BASE_URL`, `DEMO_USERNAME`, `DEMO_PASSWORD` at start-up. | A missing variable fails in one clear line instead of a timeout deep in a test. |
 | **Two Playwright projects: `live` and `mocked`.** Mocked specs intercept only the endpoints they change. | CI runs `@mocked` + lint on every push without secrets or market hours; `@live` runs on demand. |
-| **Python validates what the UI tests captured.** The TS suite writes the records it saw to `artifacts/records/*.json`; pytest + pydantic checks schema, rules R2–R7 and cross-record links. | The trading API needs session headers that are not reusable outside the browser (plain calls return 401), so this decouples the two languages through a JSON contract instead of duplicating the UI flow. If direct REST access becomes possible, only `api-tests/src/` changes. |
+| **Python validates what the UI tests captured.** The TS suite writes the records it saw to `artifacts/records/*.json`; pytest + pydantic checks schema, rules R2–R7 and cross-record links. | Decouples the two languages through a JSON contract instead of duplicating the UI flow. The same records feed both layers, so a mismatch found in Python points to a concrete test run. |
 | **No fixed waits.** Web-first assertions, `waitForResponse`, `expect.poll` for values that settle (P/L, counts). | Live prices move every tick; polling with a tolerance is stable, sleeps are not. |
 
 ### 3.3 Repository structure
@@ -118,6 +119,7 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 │   │   │                              # DeleteOrder, BulkConfirm
 │   │   ├── api/
 │   │   │   ├── endpoints.ts           # URL patterns from exploration
+│   │   │   ├── client.ts              # REST client reusing the app's auth header
 │   │   │   ├── capture.ts             # waitForResponse wrappers → typed results
 │   │   │   └── recorder.ts            # writes captured records for the Python layer
 │   │   ├── domain/
@@ -129,7 +131,7 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 │   │   │   └── trading.fixture.ts     # page objects, oneClick state, tracked orders + cleanup
 │   │   ├── data/instruments.ts        # symbol names and roles only
 │   │   └── mocks/                     # payloads + route helpers for @mocked specs
-│   └── tests/                         # 01 … 08, one spec per functional area
+│   └── tests/                         # 00 smoke, 01 … 08 one spec per functional area, unit/ for domain
 ├── api-tests/                         # Python + pytest
 │   ├── src/
 │   │   ├── models.py                  # pydantic models mirroring the captured records

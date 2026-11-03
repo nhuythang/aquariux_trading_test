@@ -14,7 +14,7 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 | E4 | Symbol quality | Observed | Some symbols are unusable for live tests: USDCAD (frozen feed, bid = ask), `*.Master` (OFFQUOTES), EURUSD (described as "test"). |
 | E5 | Account type | Observed | Netting account (`horizonAccountType: "NET"`). |
 | E6 | Shared state | Observed | One account for all tests; One-Click Trading is a per-account setting that persists. Tests run serially and set the state they need. |
-| E7 | API access | Observed | Calling the trading API outside the app's own requests returns 401 even with the session token. The Python layer therefore validates records captured by the UI suite. |
+| E7 | API access | Observed | The app authenticates every `/api/` call with `Authorization: Bearer <jwt>` (not the value stored in `localStorage.token`). Calls without that header return 401. The UI suite reuses the header from the app's own traffic for setup, cleanup and data reads. |
 | E8 | Network | Observed | Some ISP DNS resolvers (seen on VNPT) do not resolve `*.aquariux.com`. Using a public resolver (8.8.8.8 / 1.1.1.1) fixes it. |
 | E9 | Live prices | Observed | Prices move every tick. Entry-price checks use a tolerance (spread plus a small slippage margin), never exact equality with the price seen before submit. |
 
