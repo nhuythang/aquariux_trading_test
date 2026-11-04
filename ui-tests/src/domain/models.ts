@@ -156,3 +156,32 @@ export interface HistoryOrder {
   closeTime: number;
   deals: Deal[];
 }
+
+/** Notification templates seen in the Positions tab of the bell menu. */
+export const NOTIFICATION_TEMPLATE = { CREATED: 'NT_ORDER_CREATE', CLOSED: 'NT_ORDER_CLOSE' } as const;
+
+/**
+ * GET /api/notification/v2?notificationType=ORDER (newest first).
+ * `metadata.orderId` is the position (Order No.); for a close, the top-level `orderId` is the closing order.
+ * `metadata.cmd` is the position side (0 BUY, 1 SELL); `metadata.volume` is in units, `lotSize` in lots.
+ */
+export interface OrderNotification {
+  id: string;
+  message: string;
+  orderId: string;
+  created: number;
+  notificationTemplate: string;
+  metadata: {
+    orderId: string;
+    symbol: string;
+    cmd: number;
+    lotSize: number;
+    volume: number;
+    openPrice: number;
+    closePrice: number;
+    stopLoss: number;
+    takeProfit: number;
+    profit: number;
+    openTime: number;
+  };
+}

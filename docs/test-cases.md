@@ -108,12 +108,12 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 
 | ID | Scenario | Type | Pri | Layer | Expected |
 | --- | --- | --- | --- | --- | --- |
-| HN-01 | Open position → notification "Position Created" | Positive | P1 | UI | Symbol, Order No., side, volume, price match |
+| HN-01 | Open position → notification "Position Created" | Positive | P1 | UI + API | Symbol, Order No., side, volume, price match the position (bell and notification record) |
 | HN-02 | Close position → "Position Closed" with P/L | Positive | P1 | UI | Volume, price, P/L match the deal |
 | HN-03 | Positions History row after close | Positive | P1 | UI | Open/close dates, entry/close price, SL/TP, P/L |
-| HN-04 | Orders & Deals lists every order with state and deals | Positive | P2 | UI | FILLED/CANCELED, volume filled/total |
-| HN-05 | History date filter | Positive | P3 | UI | Rows outside range hidden |
-| HN-06 | Rejected order produces no FILLED record | Negative | P2 | UI | No new order in history |
+| HN-04 | Orders & Deals lists every order with state and deals | Positive | P2 | UI + API | Opening and closing orders FILLED with one deal each; cancelled pending CANCELED with none; volume "ordered / filled" |
+| HN-05 | History date filter | Positive | P3 | UI | "Last year" requests a range ending before today and hides today's position; "Last 7 days" shows it again |
+| HN-06 | Rejected order leaves nothing behind | Negative | P2 | UI + API | HTTP 400; no new order, deal, pending order or notification |
 
 ### Scope 7 – Cross-record consistency
 

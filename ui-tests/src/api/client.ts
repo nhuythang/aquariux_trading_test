@@ -5,6 +5,7 @@ import type {
   HistoryOrder,
   HistoryPosition,
   OpenPosition,
+  OrderNotification,
   PendingOrder,
   SymbolDetail,
 } from '@src/domain/models';
@@ -86,6 +87,17 @@ export class TraderApi {
 
   ordersAndDeals(from: number, to: number): Promise<HistoryOrder[]> {
     return this.call('GET', `/api/trade/order/v1/deal/histories?from=${from}&to=${to}`);
+  }
+
+  orderNotifications(): Promise<OrderNotification[]> {
+    return this.call('GET', '/api/notification/v2?notificationType=ORDER');
+  }
+
+  /** Newest notification of `template` for position `orderId`, if any. */
+  async notificationFor(orderId: string, template: string): Promise<OrderNotification | undefined> {
+    return (await this.orderNotifications()).find(
+      (n) => n.notificationTemplate === template && n.metadata.orderId === orderId,
+    );
   }
 
   deletePending(symbol: string, orderId: string): Promise<unknown> {

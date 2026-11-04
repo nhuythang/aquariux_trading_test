@@ -6,6 +6,7 @@ import { OneClickPanel } from '@src/pages/OneClickPanel';
 import { OrderPanel } from '@src/pages/OrderPanel';
 import { SettingsMenu } from '@src/pages/SettingsMenu';
 import { TradingPage } from '@src/pages/TradingPage';
+import { DateRangeFilter } from '@src/pages/assets/DateRangeFilter';
 import { OpenPositionsTab } from '@src/pages/assets/OpenPositionsTab';
 import { OrdersDealsTab } from '@src/pages/assets/OrdersDealsTab';
 import { PendingOrdersTab } from '@src/pages/assets/PendingOrdersTab';
@@ -31,6 +32,7 @@ export interface Assets {
   pendingOrders: PendingOrdersTab;
   positionsHistory: PositionsHistoryTab;
   ordersDeals: OrdersDealsTab;
+  dateFilter: DateRangeFilter;
 }
 
 /** IDs created by the test; teardown removes exactly these. */
@@ -92,6 +94,7 @@ export const test = base.extend<TradingFixtures>({
       pendingOrders: new PendingOrdersTab(page),
       positionsHistory: new PositionsHistoryTab(page),
       ordersDeals: new OrdersDealsTab(page),
+      dateFilter: new DateRangeFilter(page),
     }),
 
   dialogs: async ({ page }, use) =>
