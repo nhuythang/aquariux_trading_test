@@ -1,0 +1,183 @@
+{
+  "testId": "SM-01",
+  "capturedAt": "2026-11-04T13:12:48.211Z",
+  "records": {
+    "symbolDetail": {
+      "symbol": "XAUUSD",
+      "symbolGroup": "Default\\Commodities",
+      "currency": "USD",
+      "type": "COM",
+      "description": "Gold vs Dollar",
+      "digits": 2,
+      "decimal": 2,
+      "stopsLevel": 0,
+      "contractSize": 100,
+      "marginCurrency": "USD",
+      "profitMode": 4,
+      "marginMode": 4,
+      "marginHedged": 0,
+      "marginPercentage": 100,
+      "marginInitial": 100,
+      "marginMaintenance": 100,
+      "tradeMode": 2,
+      "exeMode": 2,
+      "gtcPendings": 0,
+      "swapType": 0,
+      "swapLong": -37.7587,
+      "swapShort": 21.169,
+      "swapRollover3days": 3,
+      "swapRates": {
+        "sunday": 0,
+        "monday": 1,
+        "tuesday": 1,
+        "wednesday": 3,
+        "thursday": 1,
+        "friday": 1,
+        "saturday": 0
+      },
+      "minContractLotSize": 0.1,
+      "maxContractLotSize": 100,
+      "lotSizeStep": 0.1,
+      "pointStep": 0.01,
+      "marketEOD": 1793829600000,
+      "tradingSessions": [
+        {
+          "dayOfWeek": 1,
+          "openDay": 1,
+          "openTime": "01:00",
+          "closeDay": 1,
+          "closeTime": "24:00"
+        },
+        {
+          "dayOfWeek": 2,
+          "openDay": 2,
+          "openTime": "01:00",
+          "closeDay": 2,
+          "closeTime": "24:00"
+        },
+        {
+          "dayOfWeek": 3,
+          "openDay": 3,
+          "openTime": "01:00",
+          "closeDay": 3,
+          "closeTime": "24:00"
+        },
+        {
+          "dayOfWeek": 4,
+          "openDay": 4,
+          "openTime": "01:00",
+          "closeDay": 4,
+          "closeTime": "24:00"
+        },
+        {
+          "dayOfWeek": 5,
+          "openDay": 5,
+          "openTime": "01:00",
+          "closeDay": 5,
+          "closeTime": "24:00"
+        }
+      ],
+      "tradingEpochSessions": [
+        {
+          "dayOfWeek": 1,
+          "tradingStartTime": 1609714800000,
+          "tradingEndTime": 1609797600000
+        },
+        {
+          "dayOfWeek": 2,
+          "tradingStartTime": 1609801200000,
+          "tradingEndTime": 1609884000000
+        },
+        {
+          "dayOfWeek": 3,
+          "tradingStartTime": 1609887600000,
+          "tradingEndTime": 1609970400000
+        },
+        {
+          "dayOfWeek": 4,
+          "tradingStartTime": 1609974000000,
+          "tradingEndTime": 1610056800000
+        },
+        {
+          "dayOfWeek": 5,
+          "tradingStartTime": 1610060400000,
+          "tradingEndTime": 1610143200000
+        }
+      ],
+      "ask": 4043.04,
+      "bid": 4042.87,
+      "open": 3930.41,
+      "high": 4051.38,
+      "low": 3919.97,
+      "lastUpdated": 1793797966902,
+      "status": "TRADING",
+      "marketStatus": null,
+      "profile": null,
+      "industry": null,
+      "indexName": null,
+      "revenue": null,
+      "totalAssets": null,
+      "operatingIncome": null,
+      "netIncome": null,
+      "totalEquity": null,
+      "symbolFillPolicy": 3,
+      "tradeFillPolicy": {
+        "marketFillPolicy": [
+          0,
+          1
+        ],
+        "limitFillPolicy": [
+          2
+        ],
+        "stopFillPolicy": [
+          2
+        ],
+        "stopLimitFillPolicy": [
+          2
+        ]
+      },
+      "maxQuoteDelay": 0,
+      "exchangeRate": 1,
+      "quoteCurrencyExchangeRate": 1,
+      "tickSize": 0,
+      "tickValue": 0,
+      "side": null,
+      "strikePrice": null,
+      "expiration": null,
+      "underlyingSymbols": null,
+      "tradableSecurityTypes": null,
+      "securityId": null,
+      "priceType": null,
+      "exerciseStyle": null,
+      "lastPrice": null,
+      "prevClose": 3930.41,
+      "uniSymbol": null,
+      "onePipEqual": null,
+      "orderTypes": [
+        "MARKET",
+        "LIMIT",
+        "STOP",
+        "STOP_LIMIT"
+      ],
+      "expirationTypes": [
+        "GTC",
+        "GTD",
+        "SPECIFIED_TIMESTAMP",
+        "SPECIFIED_DAY"
+      ],
+      "online": true,
+      "enable": true,
+      "tradable": true,
+      "tradableExeMode": true,
+      "holiday": false,
+      "sessionDiff": false,
+      "closable": true,
+      "watch": false,
+      "tickRulesGroup": null
+    },
+    "counts": {
+      "marketOrderCounts": 0,
+      "pendingOrderCounts": 0
+    }
+  }
+}

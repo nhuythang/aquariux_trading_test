@@ -114,7 +114,7 @@ export async function editPendingOrder(
   ctx: Pick<FlowContext, 'page' | 'dialogs'> & { pendingOrders: PendingOrdersTab },
   orderId: string,
   changes: { price?: number; stopLoss?: number; takeProfit?: number },
-): Promise<void> {
+): Promise<TradeResult> {
   await ctx.pendingOrders.open();
   // After a trade the app refetches the order lists several times over ~1.5 s. A refresh resets the open
   // Edit Order form to the stored values (typed input is lost, a stale validation error blocks Confirm) or
@@ -138,21 +138,23 @@ export async function editPendingOrder(
     expect(matches, 'confirmation shows the edited values').toBe(true);
   }).toPass({ timeout: 20_000 });
   // The Edit Order dialog stays open underneath an Order Confirmation that applies the change.
-  await captureResult(ctx.page, 'modifyPending', () => ctx.dialogs.confirmation.confirm());
+  const result = await captureResult<TradeResult>(ctx.page, 'modifyPending', () => ctx.dialogs.confirmation.confirm());
   await ctx.dialogs.editPending.root.waitFor({ state: 'hidden' });
+  return result;
 }
 
-/** Deletes a pending order through its row's Delete button and the confirmation dialog. */
+/** Deletes a pending order through its row's Delete button and the confirmation dialog; returns the response. */
 export async function deletePendingOrder(
   ctx: Pick<FlowContext, 'page' | 'dialogs'> & { pendingOrders: PendingOrdersTab },
   orderId: string,
-): Promise<void> {
+): Promise<TradeResult> {
   await ctx.pendingOrders.open();
-  await captureResponse(ctx.page, 'deletePending', async () => {
+  const result = await captureResult<TradeResult>(ctx.page, 'deletePending', async () => {
     await ctx.pendingOrders.delete(orderId);
     await ctx.dialogs.deleteOrder.confirm();
   });
   await ctx.pendingOrders.row(orderId).waitFor({ state: 'detached' });
+  return result;
 }
 
 /**

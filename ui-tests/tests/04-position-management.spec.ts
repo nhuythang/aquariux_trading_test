@@ -65,6 +65,7 @@ test.describe('Scope 4 – view, modify, partially close and close positions', (
     api,
     created,
     assets,
+    recorder,
   }) => {
     const placed = await placeMarketWithStops(
       { page, orderPanel, dialogs, api, created },
@@ -82,6 +83,8 @@ test.describe('Scope 4 – view, modify, partially close and close positions', (
       takeProfit,
     });
     expect(result.positionId).toBe(placed.orderId);
+    recorder.add('positionBefore', before);
+    recorder.add('modifyPositionResponse', result);
 
     await expect
       .poll(async () => {
@@ -89,6 +92,7 @@ test.describe('Scope 4 – view, modify, partially close and close positions', (
         return p && [p.stopLoss, p.takeProfit];
       })
       .toEqual([stopLoss, takeProfit]);
+    recorder.add('positionAfter', await api.openPosition(placed.orderId));
     await expect(assets.openPositions.cell(placed.orderId, 'stop-loss')).toHaveText(formatPrice(stopLoss, spec.digits));
     await expect(assets.openPositions.cell(placed.orderId, 'take-profit')).toHaveText(
       formatPrice(takeProfit, spec.digits),
@@ -148,6 +152,7 @@ test.describe('Scope 4 – view, modify, partially close and close positions', (
     await waitForPosition(api, placed.orderId);
 
     const result = await closePosition({ page, dialogs, openPositions: assets.openPositions }, placed.orderId, half);
+    recorder.add('closePositionResponse', result);
     expect(result.positionId).toBe(placed.orderId);
 
     await expect.poll(async () => (await api.openPosition(placed.orderId))?.lotSize).toBe(volume - half);
@@ -208,7 +213,13 @@ test.describe('Scope 4 – view, modify, partially close and close positions', (
     );
     const position = await waitForPosition(api, placed.orderId);
 
-    await closePosition({ page, dialogs, openPositions: assets.openPositions }, placed.orderId, position.lotSize);
+    const closed = await closePosition(
+      { page, dialogs, openPositions: assets.openPositions },
+      placed.orderId,
+      position.lotSize,
+    );
+    recorder.add('position', position);
+    recorder.add('closePositionResponse', closed);
     await expect.poll(() => api.openPosition(placed.orderId)).toBeUndefined();
     await expect(assets.openPositions.row(placed.orderId)).toHaveCount(0);
 

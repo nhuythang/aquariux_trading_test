@@ -1,0 +1,11 @@
+{
+  "testId": "PO-06",
+  "capturedAt": "2026-11-04T13:15:03.878Z",
+  "records": {
+    "rejection": {
+      "status": 400,
+      "code": "MT4_1009",
+      "message": "Metatrader Invalid Price"
+    }
+  }
+}

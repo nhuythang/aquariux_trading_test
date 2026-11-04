@@ -9,10 +9,12 @@ test.describe('Framework smoke', () => {
     orderPanel,
     settings,
     api,
+    recorder,
   }) => {
     expect(await settings.isOneClickEnabled()).toBe(false);
 
     const spec = await trading.selectSymbol(instruments.primary);
+    recorder.add('symbolDetail', spec);
     await expect(trading.selectedSymbol).toHaveText(instruments.primary);
     expect(spec.symbol).toBe(instruments.primary);
     expect(spec.minContractLotSize).toBeGreaterThan(0);
@@ -23,6 +25,7 @@ test.describe('Framework smoke', () => {
     expect(quote.ask).toBeGreaterThanOrEqual(quote.bid);
 
     const counts = await api.counts();
+    recorder.add('counts', counts);
     expect(counts.marketOrderCounts).toBeGreaterThanOrEqual(0);
   });
 });

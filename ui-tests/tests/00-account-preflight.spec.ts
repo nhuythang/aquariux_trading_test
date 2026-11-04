@@ -5,9 +5,14 @@ import { expect, test } from '@src/fixtures/trading.fixture';
  * was killed (Ctrl+C, crash) skips teardown. This check names any leftover so it is closed by hand
  * before the suite trusts the account; it never closes anything itself, since it cannot know who owns it.
  */
-test('AC-00 account has no open positions or pending orders before the run @live', async ({ trading, api }) => {
+test('AC-00 account has no open positions or pending orders before the run @live', async ({
+  trading,
+  api,
+  recorder,
+}) => {
   await trading.selectedSymbol.waitFor();
-  const [positions, pending] = await Promise.all([api.openPositions(), api.pendingOrders()]);
+  const [positions, pending, counts] = await Promise.all([api.openPositions(), api.pendingOrders(), api.counts()]);
+  recorder.add('counts', counts);
   expect(
     {
       positions: positions.map((p) => `${p.orderId} ${p.symbol} ${p.lotSize}`),

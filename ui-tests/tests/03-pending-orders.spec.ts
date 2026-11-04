@@ -86,6 +86,7 @@ test.describe('Scope 3 – pending orders', () => {
       });
 
       const order = await waitForPending(api, placed.orderId);
+      recorder.add('placePendingResponse', placed.result);
       recorder.add('pending', order);
       expect(order).toMatchObject({
         symbol: spec.symbol,
@@ -127,6 +128,7 @@ test.describe('Scope 3 – pending orders', () => {
 
     // The form's "Price" is saved as `price`, its "Stop Limit Price" as `priceTrigger`.
     const order = await waitForPending(api, placed.orderId);
+    recorder.add('placePendingResponse', placed.result);
     recorder.add('pending', order);
     expect(order).toMatchObject({ orderType: ORDER_TYPE.BUY_STOP_LIMIT, price: stop, priceTrigger: limit });
 
@@ -143,6 +145,7 @@ test.describe('Scope 3 – pending orders', () => {
     orderPanel,
     dialogs,
     api,
+    recorder,
   }) => {
     await orderPanel.open();
     const quote = await orderPanel.quote();
@@ -154,6 +157,7 @@ test.describe('Scope 3 – pending orders', () => {
       { page, orderPanel, dialogs },
       { side: 'BUY', type: 'Limit', volume: spec.minContractLotSize, price: wrongPrice },
     );
+    recorder.add('rejection', rejection);
     expect(rejection).toEqual({ status: 400, code: 'MT4_1009', message: 'Metatrader Invalid Price' });
     expect(await api.pendingOrders()).toHaveLength(before.length);
   });
@@ -233,6 +237,7 @@ test.describe('Scope 3 – pending orders', () => {
     api,
     created,
     assets,
+    recorder,
   }) => {
     await orderPanel.open();
     const quote = await orderPanel.quote();
@@ -242,16 +247,17 @@ test.describe('Scope 3 – pending orders', () => {
       volume: spec.minContractLotSize,
       price: offsetPercent(quote.ask, -DISTANCE_PERCENT, spec),
     });
-    await waitForPending(api, placed.orderId);
+    recorder.add('pendingBefore', await waitForPending(api, placed.orderId));
 
     const newPrice = offsetPercent(quote.ask, -DISTANCE_PERCENT * 1.5, spec);
     const stopLoss = offsetPercent(newPrice, -1, spec);
     const takeProfit = offsetPercent(newPrice, 1, spec);
-    await editPendingOrder({ page, dialogs, pendingOrders: assets.pendingOrders }, placed.orderId, {
+    const modified = await editPendingOrder({ page, dialogs, pendingOrders: assets.pendingOrders }, placed.orderId, {
       price: newPrice,
       stopLoss,
       takeProfit,
     });
+    recorder.add('modifyPendingResponse', modified);
 
     await expect
       .poll(async () => {
@@ -259,6 +265,7 @@ test.describe('Scope 3 – pending orders', () => {
         return o && [o.price, o.stopLoss, o.takeProfit];
       })
       .toEqual([newPrice, stopLoss, takeProfit]);
+    recorder.add('pendingAfter', await api.pendingOrder(placed.orderId));
     await expect(assets.pendingOrders.cell(placed.orderId, 'entry-price')).toHaveText(
       formatPrice(newPrice, spec.digits),
     );
@@ -288,7 +295,8 @@ test.describe('Scope 3 – pending orders', () => {
     });
     await waitForPending(api, placed.orderId);
 
-    await deletePendingOrder({ page, dialogs, pendingOrders: assets.pendingOrders }, placed.orderId);
+    const deleted = await deletePendingOrder({ page, dialogs, pendingOrders: assets.pendingOrders }, placed.orderId);
+    recorder.add('deletePendingResponse', deleted);
     expect(await api.pendingOrder(placed.orderId)).toBeUndefined();
 
     // Orders & Deals keeps the order with state CANCELED and no deal (R7).

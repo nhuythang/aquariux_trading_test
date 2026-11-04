@@ -1,0 +1,24 @@
+[project]
+name = "aqx-record-checks"
+version = "0.1.0"
+description = "Schema, business-rule and cross-record checks on records captured by the Aquariux UI suite"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "schema: record matches its pydantic model",
+    "rules: single-record business rules",
+    "consistency: the same trade agrees across records",
+    "guard: the checks themselves reject broken records",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "PT", "RUF"]

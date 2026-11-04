@@ -87,6 +87,7 @@ test.describe('Scope 8 – market closed', () => {
     trading,
     orderPanel,
     api,
+    recorder,
   }) => {
     const symbol = await findClosedTradableSymbol(api);
     // Depends on the calendar, so it is skipped (not failed) when nothing is closed; MC-01..03 cover it with mocks.
@@ -94,6 +95,7 @@ test.describe('Scope 8 – market closed', () => {
     test.skip(!symbol, 'No web-tradable symbol is closed at the moment.');
 
     const spec = await trading.selectSymbol(symbol!);
+    recorder.add('symbolDetail', spec);
     expect(spec).toMatchObject({ status: 'CLOSED', tradable: false });
     await expect(orderPanel.restrictedNotice).toBeVisible();
     await expect(orderPanel.submitButton).toHaveText('Market Closed');

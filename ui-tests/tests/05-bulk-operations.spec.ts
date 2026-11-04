@@ -103,6 +103,7 @@ test.describe('Scope 5 – bulk close and bulk delete', () => {
     }
 
     const result = await bulkDeletePending({ page, dialogs, pendingOrders: assets.pendingOrders });
+    recorder.add('bulkDelete', result);
     expect(result.deletedOrderIds.map(String).sort()).toEqual([...ids].sort());
 
     await expect.poll(async () => (await api.pendingOrders()).length).toBe(0);

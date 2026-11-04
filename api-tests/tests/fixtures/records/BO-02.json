@@ -1,0 +1,20 @@
+{
+  "testId": "BO-02",
+  "capturedAt": "2026-11-04T13:17:33.479Z",
+  "records": {
+    "bulkDelete": {
+      "horizonAccountType": "NET",
+      "traceId": "1a472a44-6a9b-4cb1-a66c-1890972a62e7",
+      "deletedOrderIds": [
+        2816391,
+        2816390,
+        2816389
+      ]
+    },
+    "cancelledIds": [
+      "2816389",
+      "2816390",
+      "2816391"
+    ]
+  }
+}

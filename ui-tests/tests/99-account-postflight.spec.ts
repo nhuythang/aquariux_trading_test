@@ -4,9 +4,14 @@ import { expect, test } from '@src/fixtures/trading.fixture';
  * Runs last (files run in name order, one worker): proves the suite as a whole left the shared
  * demo account as it found it. Reports leftovers by ID; it does not close them.
  */
-test('AC-99 account has no open positions or pending orders after the run @live', async ({ trading, api }) => {
+test('AC-99 account has no open positions or pending orders after the run @live', async ({
+  trading,
+  api,
+  recorder,
+}) => {
   await trading.selectedSymbol.waitFor();
-  const [positions, pending] = await Promise.all([api.openPositions(), api.pendingOrders()]);
+  const [positions, pending, counts] = await Promise.all([api.openPositions(), api.pendingOrders(), api.counts()]);
+  recorder.add('counts', counts);
   expect(
     {
       positions: positions.map((p) => `${p.orderId} ${p.symbol} ${p.lotSize}`),

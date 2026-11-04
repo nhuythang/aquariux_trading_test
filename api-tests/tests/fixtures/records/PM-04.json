@@ -1,0 +1,57 @@
+{
+  "testId": "PM-04",
+  "capturedAt": "2026-11-04T13:16:37.310Z",
+  "records": {
+    "closePositionResponse": {
+      "positionId": "2816376",
+      "positionReference": "2816376",
+      "clOrdId": "2816376",
+      "traceId": "ac516517-228b-403b-ba69-b8cc383def4a"
+    },
+    "closing": {
+      "orderId": "2816377",
+      "symbol": "XAUUSD",
+      "volume": 1000,
+      "volumeFilled": 1000,
+      "lotSize": 0.1,
+      "lotSizeFilled": 0.1,
+      "units": 10,
+      "decimal": 2,
+      "openPrice": 4035.32,
+      "takeProfit": 0,
+      "stopLoss": 0,
+      "orderType": 1,
+      "state": 11,
+      "fillPolicy": 0,
+      "status": null,
+      "deals": [
+        {
+          "dealId": "1969383",
+          "symbol": "XAUUSD",
+          "takeProfit": 4045.17,
+          "stopLoss": 4025.17,
+          "lotSize": 0.1,
+          "volume": 1000,
+          "units": 10,
+          "swap": 0,
+          "commission": 0,
+          "fee": 0,
+          "price": 4035.32,
+          "profit": -2.5,
+          "dealType": 1,
+          "direction": 1,
+          "reason": 2,
+          "comment": "wt|oc:aQrLH8vMxYKS0wkpygMQ-DD",
+          "openTime": 1793798194000
+        }
+      ],
+      "symbolType": "COM",
+      "remarks": null,
+      "openTime": 1793798194000,
+      "closeTime": 1793798194000,
+      "isEnable": true,
+      "copyTradeInfo": null,
+      "comment": null
+    }
+  }
+}

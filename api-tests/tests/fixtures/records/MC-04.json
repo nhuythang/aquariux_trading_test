@@ -1,0 +1,176 @@
+{
+  "testId": "MC-04",
+  "capturedAt": "2026-11-04T13:20:13.487Z",
+  "records": {
+    "symbolDetail": {
+      "symbol": "USDJPY",
+      "symbolGroup": "Default\\Forex Majors",
+      "currency": "USD",
+      "type": "FOREX",
+      "description": "US Dollar vs Japanese Yen",
+      "digits": 3,
+      "decimal": 3,
+      "stopsLevel": 30,
+      "contractSize": 100000,
+      "marginCurrency": "USD",
+      "profitMode": 0,
+      "marginMode": 0,
+      "marginHedged": 100000,
+      "marginPercentage": 100,
+      "marginInitial": 100,
+      "marginMaintenance": 0,
+      "tradeMode": 2,
+      "exeMode": 2,
+      "gtcPendings": 0,
+      "swapType": 0,
+      "swapLong": 22.4,
+      "swapShort": -23.44,
+      "swapRollover3days": 3,
+      "swapRates": {
+        "sunday": 0,
+        "monday": 1,
+        "tuesday": 1,
+        "wednesday": 3,
+        "thursday": 1,
+        "friday": 1,
+        "saturday": 0
+      },
+      "minContractLotSize": 0.01,
+      "maxContractLotSize": 100,
+      "lotSizeStep": 0.01,
+      "pointStep": 0.001,
+      "marketEOD": 1793829600000,
+      "tradingSessions": [
+        {
+          "dayOfWeek": 1,
+          "openDay": 1,
+          "openTime": "00:00",
+          "closeDay": 1,
+          "closeTime": "24:00"
+        },
+        {
+          "dayOfWeek": 2,
+          "openDay": 2,
+          "openTime": "00:00",
+          "closeDay": 2,
+          "closeTime": "24:00"
+        },
+        {
+          "dayOfWeek": 3,
+          "openDay": 3,
+          "openTime": "00:00",
+          "closeDay": 3,
+          "closeTime": "24:00"
+        },
+        {
+          "dayOfWeek": 4,
+          "openDay": 4,
+          "openTime": "11:05",
+          "closeDay": 4,
+          "closeTime": "23:30"
+        },
+        {
+          "dayOfWeek": 5,
+          "openDay": 5,
+          "openTime": "00:00",
+          "closeDay": 5,
+          "closeTime": "23:25"
+        }
+      ],
+      "tradingEpochSessions": [
+        {
+          "dayOfWeek": 1,
+          "tradingStartTime": 1609711200000,
+          "tradingEndTime": 1609797600000
+        },
+        {
+          "dayOfWeek": 2,
+          "tradingStartTime": 1609797600000,
+          "tradingEndTime": 1609884000000
+        },
+        {
+          "dayOfWeek": 3,
+          "tradingStartTime": 1609884000000,
+          "tradingEndTime": 1609970400000
+        },
+        {
+          "dayOfWeek": 4,
+          "tradingStartTime": 1610010300000,
+          "tradingEndTime": 1610055000000
+        },
+        {
+          "dayOfWeek": 5,
+          "tradingStartTime": 1610056800000,
+          "tradingEndTime": 1610141100000
+        }
+      ],
+      "ask": 157.885,
+      "bid": 157.855,
+      "open": 157.855,
+      "high": 157.957,
+      "low": 157.736,
+      "lastUpdated": 1793693277,
+      "status": "CLOSED",
+      "marketStatus": null,
+      "profile": null,
+      "industry": null,
+      "indexName": null,
+      "revenue": null,
+      "totalAssets": null,
+      "operatingIncome": null,
+      "netIncome": null,
+      "totalEquity": null,
+      "symbolFillPolicy": 0,
+      "tradeFillPolicy": {
+        "marketFillPolicy": [],
+        "limitFillPolicy": [
+          2
+        ],
+        "stopFillPolicy": [
+          2
+        ],
+        "stopLimitFillPolicy": [
+          2
+        ]
+      },
+      "maxQuoteDelay": 0,
+      "exchangeRate": 1,
+      "quoteCurrencyExchangeRate": 0.006334927623451903,
+      "tickSize": 0,
+      "tickValue": 0,
+      "side": null,
+      "strikePrice": null,
+      "expiration": null,
+      "underlyingSymbols": null,
+      "tradableSecurityTypes": null,
+      "securityId": null,
+      "priceType": null,
+      "exerciseStyle": null,
+      "lastPrice": null,
+      "prevClose": 157.855,
+      "uniSymbol": null,
+      "onePipEqual": null,
+      "orderTypes": [
+        "MARKET",
+        "LIMIT",
+        "STOP",
+        "STOP_LIMIT"
+      ],
+      "expirationTypes": [
+        "GTC",
+        "GTD",
+        "SPECIFIED_TIMESTAMP",
+        "SPECIFIED_DAY"
+      ],
+      "online": false,
+      "enable": true,
+      "tradable": false,
+      "tradableExeMode": true,
+      "holiday": true,
+      "sessionDiff": false,
+      "closable": false,
+      "watch": false,
+      "tickRulesGroup": null
+    }
+  }
+}

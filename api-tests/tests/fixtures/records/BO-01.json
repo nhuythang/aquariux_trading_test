@@ -1,0 +1,15 @@
+{
+  "testId": "BO-01",
+  "capturedAt": "2026-11-04T13:17:16.771Z",
+  "records": {
+    "bulkClose": {
+      "horizonAccountType": "NET",
+      "traceId": "d7785d76-2da1-4362-8225-ddd516193c75",
+      "closedOrderIds": [
+        2816385,
+        2816384,
+        2816383
+      ]
+    }
+  }
+}

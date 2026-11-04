@@ -122,7 +122,7 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | CR-01 | Trace one order ID: POST response → open position → notification → Positions History → Orders & Deals | Positive | P1 | UI | Symbol, side, volume, entry, SL, TP equal everywhere |
 | CR-02 | Partial close reconciliation | Positive | P2 | UI + API | Closed + remaining = original; deal profits sum = position P/L (R6) |
 | CR-03 | Cancelled pending: Pending list ↔ Orders & Deals | Positive | P2 | UI | Same ID, price, volume; state CANCELED |
-| CR-04 | Record schema and business-rule validation of captured records | Positive | P1 | API | All records match pydantic models; R2–R7 hold |
+| CR-04 | Record schema and business-rule validation of captured records | Positive | P1 | API | All records match pydantic models; R2–R7 and cross-record links hold; each check rejects a deliberately broken record (`api-tests/`) |
 
 ### Scope 8 – Market closed
 

@@ -92,7 +92,7 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 | **Login once.** A setup project logs in from `.env` and saves `storageState` (the session token lives in `localStorage`). | Saves time and keeps credentials out of every spec. |
 | **Typed config, fail fast.** `config/env.ts` validates `BASE_URL`, `DEMO_USERNAME`, `DEMO_PASSWORD` at start-up. | A missing variable fails in one clear line instead of a timeout deep in a test. |
 | **Two Playwright projects: `live` and `mocked`.** Mocked specs intercept only the endpoints they change. | CI runs `@mocked` + lint on every push without secrets or market hours; `@live` runs on demand. |
-| **Python validates what the UI tests captured.** The TS suite writes the records it saw to `artifacts/records/*.json`; pytest + pydantic checks schema, rules R2–R7 and cross-record links. | Decouples the two languages through a JSON contract instead of duplicating the UI flow. The same records feed both layers, so a mismatch found in Python points to a concrete test run. |
+| **Python validates what the UI tests captured.** The TS suite writes the records it saw to `artifacts/records/*.json`; pytest + pydantic checks schema, rules R2–R7 and cross-record links, and a guard suite proves each check rejects a deliberately broken record. | Decouples the two languages through a JSON contract instead of duplicating the UI flow. The same records feed both layers, so a mismatch found in Python points to a concrete test run. |
 | **No fixed waits.** Web-first assertions, `waitForResponse`, `expect.poll` for values that settle (P/L, counts). | Live prices move every tick; polling with a tolerance is stable, sleeps are not. |
 
 ### 3.3 Repository structure
@@ -133,15 +133,22 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 │   │   ├── data/instruments.ts        # symbol names and roles only
 │   │   └── mocks/                     # payloads + route helpers for @mocked specs
 │   └── tests/                         # 00 smoke, 01 … 08 one spec per functional area, unit/ for domain
-├── api-tests/                         # Python + pytest
-│   ├── src/
-│   │   ├── models.py                  # pydantic models mirroring the captured records
-│   │   └── loader.py                  # reads artifacts/records
-│   ├── tests/                         # schema, business rules, cross-record consistency
-│   └── conftest.py
+├── api-tests/                         # Python + pytest + pydantic
+│   ├── pyproject.toml                 # pytest + ruff config
+│   ├── src/aqx/
+│   │   ├── models.py                  # pydantic models: the schema contract for each record kind
+│   │   ├── records.py                 # loads record files, routes each key to its model, scrubs samples
+│   │   └── rules.py                   # business rules (R2–R7) as functions returning violations
+│   └── tests/
+│       ├── fixtures/records/          # scrubbed sample records from a real run (no account IDs)
+│       ├── test_record_schema.py      # every record matches its model; record keys keep their contract
+│       ├── test_business_rules.py     # single-record rules for every record of a kind
+│       ├── test_cross_record_consistency.py  # one trade agrees across its records; each trade response names its order
+│       └── test_checks_reject_bad_records.py # each check rejects a record broken the way it guards against
 ├── docs/
 │   ├── test-cases.md
 │   └── assumptions.md
+├── Makefile                           # make test: UI suite, then pytest on its records
 ├── .github/workflows/ci.yml           # lint + @mocked on push
 └── .env.example
 ```
@@ -160,6 +167,17 @@ cp .env.example .env
 ```
 `.env` is git-ignored. No credentials are stored in this repository.
 
+### One command for both layers
+```bash
+make setup         # once: Node deps, Chromium, Python venv
+make test          # UI (unit + live + mocked), then pytest on the records that run produced
+```
+`make test` clears `artifacts/records/` first, so Python validates this run only. pytest still runs when some UI
+tests fail (the records of the passing ones are checked), and the command fails if either layer failed.
+Other targets: `make ui`, `make api`, `make api-samples` (committed samples, no login or network),
+`make lint`, `make report`; `make help` lists them. `UI_ARGS` passes extra options to Playwright,
+e.g. `make ui UI_ARGS="--grep @mocked"`.
+
 ### UI tests
 ```bash
 cd ui-tests
@@ -171,13 +189,29 @@ npx playwright test --grep @mocked  # runs even when the market is closed
 npx playwright show-report
 ```
 
-### API tests
+### API tests (data validation)
 ```bash
 cd api-tests
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-pytest -v
+pytest                                              # records of the last UI run, else the committed samples
+AQX_RECORDS_DIR=tests/fixtures/records pytest       # committed samples only (no credentials, no network)
+pytest --html=reports/report.html --self-contained-html
+ruff check . && ruff format --check .
 ```
+The UI tests write what they observed to `artifacts/records/<testId>.json`. pytest validates those files, so
+run the UI suite first to check a fresh run; `python -m aqx.records` (with `PYTHONPATH=src`) refreshes the
+committed samples from the last run, with account identifiers removed.
+
+**Endpoints covered** (responses captured by the UI tests, validated in Python): place market / pending order,
+modify position / pending order, close position, delete pending order, Bulk Close, Bulk Delete, a refused order
+(4xx error envelope), open positions, pending orders, order counts, symbol detail, Positions History, Orders & Deals
+and order notifications.
+
+**Why records, not direct REST calls.** The backend accepts only an `Authorization: Bearer` token that the app
+obtains in the browser (E7); it is not the token stored after login, and reproducing it outside the browser would
+mean reverse-engineering the login flow. Validating the records the UI tests capture gives the same schema and
+rule checks on real backend data, needs no credentials in Python, and ties every finding to a concrete UI test.
 
 ## 5. Assumptions and environment limitations
 

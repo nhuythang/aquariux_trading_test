@@ -1,0 +1,10 @@
+{
+  "testId": "AC-00",
+  "capturedAt": "2026-11-04T13:12:43.844Z",
+  "records": {
+    "counts": {
+      "marketOrderCounts": 0,
+      "pendingOrderCounts": 0
+    }
+  }
+}
