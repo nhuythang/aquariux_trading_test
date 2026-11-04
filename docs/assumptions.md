@@ -39,6 +39,11 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 | R14 | The panel does not check the side of a pending price: a Buy Limit above the Ask reaches the confirmation and the backend rejects it with HTTP 400, code `MT4_1009` "Metatrader Invalid Price". | Observed | PO-06 |
 | R15 | Stop Limit: the form's "Price" is the stop (trigger) price and "Stop Limit Price" is the limit price, sent as `priceTrigger`. The Pending Orders grid shows only the stop price. | Observed | PO-05 |
 | R16 | Expiry types: Good Till Canceled → `GTC`, Good Till Day → `GTD`, Specified Date → `SPECIFIED_DAY` (with an `expiration` timestamp). Past days are disabled in the calendar. | Observed | PO-07, PO-08 |
+| R17 | Edit Position: a Stop Loss on the wrong side shows the inline message ("Stop Loss must be less than Sell Price." for a BUY). Update Position stays enabled but clicking it does nothing: no confirmation, no request. | Observed | PM-03 |
+| R18 | Close Position: Confirm is disabled when the close volume is larger than the position. | Observed | PM-05 |
+| R19 | Bulk Delete menu: All Orders / Limit Orders / Stop Orders / Stop Limit Orders (empty categories greyed out). It sends `PUT /api/trade/trade/v1/limit/bulk` with `[{orderId, symbol}]` and returns `deletedOrderIds`; the orders appear as CANCELED in Orders & Deals. | Observed | BO-02 |
+| R20 | Bulk Close: the client builds the list (`PUT /api/trade/trade/v1/bulk`, `orderList`) from its own price feed. When none of the sent positions still qualifies, the backend answers HTTP 400 `MT5_1002` "No orders are closed". With no open positions the menu opens empty: no dialog, no request. | Observed | BO-03, BO-04 |
+| R21 | The account is **netting**: a second order on the same symbol changes the existing position, so tests that need several positions use different symbols. | Observed | BO-01, BO-03 |
 
 ## 3. Interpretation of the brief
 
@@ -52,8 +57,12 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 
 ## 4. Known limitations
 
-- After every trade the app refetches the order lists for about 1.5 s; a refetch can reset or close an open Edit Order dialog. The edit flow retries until the Order Confirmation shows the entered values (observed as a usability issue: slow typing can lose edits).
+- After every trade the app refetches the order lists for about 1.5 s; a refetch can reset or close an open Edit Order / Edit Position dialog or swallow a click on the Close Position Confirm. The edit flow retries until the Order Confirmation shows the entered values (observed as a usability issue: slow typing can lose edits).
 
 - `@live` results depend on demo-server availability and market hours (E3).
-- Profitable / Loss bulk close depends on live P/L at click time, so the expected set is read from the API just before the action.
+- Profitable / Loss bulk close depends on live P/L at click time, so BO-03 takes an API snapshot right before and right after the click and asserts the closed IDs are a subset of the positions in loss before, and that nothing in loss both before and after is left open. Positions History `profit` is the realised P/L, not the P/L at click time.
+- Close Position retries typing and Confirm only until the close request has been sent, so a partial close is never submitted twice; teardown dismisses a leftover close dialog before cleaning up.
+- Cleanup (`created` fixture): flows register each order from its trade response; teardown also adopts any position or pending order that appeared during the test without being registered (snapshot of the account before the test vs after), which covers a timed-out response or a pending order filling into a position. This relies on one test at a time on the account (`workers: 1`) and on nobody trading on it by hand during a run.
+- A killed run (Ctrl+C, crash) can skip teardown. `AC-00` (first spec) reports leftovers before the suite relies on the account and `AC-99` (last spec) proves the run left it empty; both only report by ID and never close orders they did not create. Running a single spec skips them, so they matter for full runs.
+- The repository sits in an iCloud-synced folder on the author's machine; iCloud occasionally evicts `node_modules` files or returns an empty read of `.auth/demo-user.json`. These are local-environment flakes (fixed by `npm ci` / a rerun), not product behaviour.
 - Rules marked *Assumed* may differ from the platform's real behaviour. Where a test observes something different, the test records the actual behaviour and this file is updated.

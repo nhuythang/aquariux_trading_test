@@ -45,16 +45,23 @@ export class TraderApi {
 
   private async call<T>(method: 'GET' | 'PUT' | 'DELETE', path: string, data?: unknown): Promise<T> {
     await this.ready();
-    const response = await this.request.fetch(path, {
-      method,
-      headers: { Authorization: this.authorization!, 'Content-Type': 'application/json' },
-      data,
-    });
+    const response = await this.fetchWithRetry(method, path, data);
     const body = (await response.json()) as ApiEnvelope<T>;
     if (!response.ok() || body.code !== '200') {
       throw new Error(`${method} ${path} → HTTP ${response.status()} code ${body.code} ${body.message ?? ''}`);
     }
     return body.result;
+  }
+
+  /** Reads are repeated once when the request itself times out or is dropped; writes are never repeated. */
+  private async fetchWithRetry(method: 'GET' | 'PUT' | 'DELETE', path: string, data?: unknown) {
+    const send = () =>
+      this.request.fetch(path, {
+        method,
+        headers: { Authorization: this.authorization!, 'Content-Type': 'application/json' },
+        data,
+      });
+    return method === 'GET' ? send().catch(send) : send();
   }
 
   symbolDetail(symbol: string): Promise<SymbolDetail> {

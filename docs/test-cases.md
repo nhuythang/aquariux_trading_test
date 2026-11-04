@@ -89,9 +89,9 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | --- | --- | --- | --- | --- | --- |
 | PM-01 | View open position: every column matches the API record | Positive | P1 | UI | Symbol, side, volume, units, entry, SL, TP, P/L sign consistent |
 | PM-02 | Modify SL/TP | Positive | P1 | UI | Row and API updated; Order No. unchanged |
-| PM-03 | Modify SL to wrong side | Negative | P2 | UI | Rejected; old SL kept |
+| PM-03 | Modify SL to wrong side | Negative | P2 | UI | Inline message; no confirmation and no request; old SL kept |
 | PM-04 | Partial close 0.1 of 0.2 | Positive | P1 | UI | Remaining 0.1, same Order No.; a SELL 0.1 FILLED order in Orders & Deals |
-| PM-05 | Partial close volume > position or below min | Boundary | P2 | UI | Confirm disabled or error; volume unchanged |
+| PM-05 | Partial close volume > position or below min | Boundary | P2 | UI | Confirm disabled; volume unchanged |
 | PM-06 | Full close | Positive | P1 | UI | Removed from Open Positions; in Positions History with close price and P/L |
 
 ### Scope 5 – Bulk operations
@@ -100,8 +100,8 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | --- | --- | --- | --- | --- | --- |
 | BO-01 | Open 3 positions on 3 symbols → Bulk Close All | Positive | P1 | UI | `closedOrderIds` = the 3 IDs; Open Positions empty; 3 entries in history |
 | BO-02 | Create 3 pending orders → Bulk Delete | Positive | P1 | UI | Pending empty; 3 CANCELED in Orders & Deals |
-| BO-03 | Bulk Close Profitable / Loss | Positive | P3 | UI | Only positions with matching P/L sign at click time are closed |
-| BO-04 | Bulk Close with no positions | Negative | P3 | UI | No request sent or no-op; no error |
+| BO-03 | Bulk Close Profitable / Loss | Positive | P3 | UI | Closed IDs ⊆ positions in loss just before the click; none left that were in loss before and after |
+| BO-04 | Bulk Close with no positions | Negative | P3 | UI | Menu opens empty; no dialog, no request |
 | BO-05 | Bulk Close confirmation Cancel | Negative | P3 | UI | Nothing closed |
 
 ### Scope 6 – History, transactions, notifications
@@ -132,6 +132,13 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | MC-02 | Trade endpoint mocked to return a market-closed error | Negative | P2 | M | Error message shown; no position added |
 | MC-03 | Pending order on a closed market (if allowed) | Positive | P3 | M | Pending created or rejected, as the UI indicates |
 | MC-04 | Real closed symbol at run time | Negative | P3 | UI | As MC-01; skipped when no symbol is closed |
+
+### Account guards (not counted below)
+
+| ID | Title | Expected |
+| --- | --- | --- |
+| AC-00 | First spec of a full run: the demo account has no open positions or pending orders | Empty; otherwise the leftovers are listed by ID (never closed automatically) |
+| AC-99 | Last spec of a full run: the suite left the account empty | Empty; otherwise the leftovers are listed by ID |
 
 ## 3. Out of scope
 

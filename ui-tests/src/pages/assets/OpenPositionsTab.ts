@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { AssetTab } from './AssetTab';
 
 export type OpenPositionColumn =
@@ -40,9 +40,18 @@ export class OpenPositionsTab extends AssetTab<OpenPositionColumn> {
     await this.row(orderId).getByTestId('asset-open-button-close').click();
   }
 
-  /** Opens the Bulk Close menu and picks an option; the confirmation dialog follows. */
+  bulkCloseOption(option: BulkCloseOption): Locator {
+    return this.page.getByText(option, { exact: true });
+  }
+
+  /**
+   * Opens the Bulk Close menu and picks an option; the confirmation dialog follows.
+   * The menu stays empty until the list has loaded the new positions, so opening it is retried.
+   */
   async chooseBulkClose(option: BulkCloseOption): Promise<void> {
-    await this.bulkClose.click();
-    await this.page.getByText(option, { exact: true }).click();
+    await expect(async () => {
+      if (!(await this.bulkCloseOption(option).isVisible())) await this.bulkClose.click();
+      await this.bulkCloseOption(option).click({ timeout: 2_000 });
+    }).toPass({ timeout: 15_000 });
   }
 }

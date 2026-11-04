@@ -15,9 +15,18 @@ export class TradingPage extends BasePage {
     super(page);
   }
 
+  /**
+   * The demo server sometimes renders the header but never the symbol overview on first load;
+   * a reload recovers it, so the page is loaded once more before giving up.
+   */
   async open(): Promise<void> {
     await this.page.goto('/web/trade');
-    await this.selectedSymbol.waitFor();
+    try {
+      await this.selectedSymbol.waitFor({ timeout: 20_000 });
+    } catch {
+      await this.page.reload();
+      await this.selectedSymbol.waitFor({ timeout: 20_000 });
+    }
   }
 
   /**

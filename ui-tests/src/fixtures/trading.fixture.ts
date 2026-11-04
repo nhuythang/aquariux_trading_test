@@ -109,10 +109,37 @@ export const test = base.extend<TradingFixtures>({
    * positions through the UI Close action. Runs even when the test failed.
    * Success is judged by the API, never by a row disappearing (list refreshes hide rows briefly),
    * and anything still open at the end fails the test so a leak cannot go unnoticed.
+   *
+   * Flows register an order once its response arrives. An order can still exist without one
+   * (response timed out, a pending order filled into a new position), so the account is
+   * snapshotted before the test and anything that appeared since is adopted for cleanup too.
+   * Tests run one at a time on the account (workers: 1), so a new order can only be this test's.
    */
-  created: async ({ api, assets, dialogs }, use) => {
+  created: async ({ trading, api, assets, dialogs }, use, testInfo) => {
+    await trading.selectedSymbol.waitFor();
+    const [positionsBefore, pendingBefore] = await Promise.all([api.openPositions(), api.pendingOrders()]);
+    const existing = new Set([...positionsBefore, ...pendingBefore].map((o) => o.orderId));
+
     const created = new CreatedOrders();
     await use(created);
+
+    const [positionsAfter, pendingAfter] = await Promise.all([api.openPositions(), api.pendingOrders()]);
+    for (const p of positionsAfter) {
+      if (existing.has(p.orderId) || created.positions.has(p.orderId)) continue;
+      created.position(p.orderId, p.symbol);
+      testInfo.annotations.push({
+        type: 'cleanup',
+        description: `adopted untracked position ${p.orderId} ${p.symbol}`,
+      });
+    }
+    for (const o of pendingAfter) {
+      if (existing.has(o.orderId) || created.pending.has(o.orderId)) continue;
+      created.pendingOrder(o.orderId, o.symbol);
+      testInfo.annotations.push({
+        type: 'cleanup',
+        description: `adopted untracked pending order ${o.orderId} ${o.symbol}`,
+      });
+    }
 
     for (const [orderId, symbol] of created.pending) {
       if (await api.pendingOrder(orderId)) await api.deletePending(symbol, orderId);
@@ -122,6 +149,8 @@ export const test = base.extend<TradingFixtures>({
       await expect(async () => {
         const position = await api.openPosition(orderId);
         if (!position) return;
+        // A dialog left open by a failed step covers the page; clear it before using the list.
+        await dialogs.close.dismissIfOpen();
         await assets.openPositions.open();
         await assets.openPositions.close(orderId);
         // With One-Click Trading on, Close acts immediately; otherwise a dialog asks for the volume.

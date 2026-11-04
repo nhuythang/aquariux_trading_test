@@ -1,11 +1,20 @@
 import { expect, type Page } from '@playwright/test';
 import { captureResponse, captureResult, requestsDuring } from '@src/api/capture';
 import type { TraderApi } from '@src/api/client';
-import type { ApiEnvelope, OpenPosition, PendingOrder, SymbolDetail, TradeResult } from '@src/domain/models';
+import type {
+  ApiEnvelope,
+  BulkCloseResult,
+  BulkDeleteResult,
+  OpenPosition,
+  PendingOrder,
+  SymbolDetail,
+  TradeResult,
+} from '@src/domain/models';
 import { parseUiNumber, validStops } from '@src/domain/price';
 import type { CreatedOrders, Dialogs } from '@src/fixtures/trading.fixture';
 import type { OrderForm, OrderPanel } from '@src/pages/OrderPanel';
-import type { PendingOrdersTab } from '@src/pages/assets/PendingOrdersTab';
+import type { BulkCloseOption, OpenPositionsTab } from '@src/pages/assets/OpenPositionsTab';
+import type { BulkDeleteOption, PendingOrdersTab } from '@src/pages/assets/PendingOrdersTab';
 
 /**
  * Multi-step user actions reused by several specs. A flow drives page objects, captures the
@@ -144,6 +153,126 @@ export async function deletePendingOrder(
     await ctx.dialogs.deleteOrder.confirm();
   });
   await ctx.pendingOrders.row(orderId).waitFor({ state: 'detached' });
+}
+
+/**
+ * Edits SL/TP of an open position (Edit Position → Order Confirmation → PATCH /market).
+ * Like pending edits, a list refresh can reset the dialog, so the edit is repeated until the
+ * Order Confirmation shows the entered values.
+ */
+export async function editPosition(
+  ctx: Pick<FlowContext, 'page' | 'dialogs'> & { openPositions: OpenPositionsTab },
+  orderId: string,
+  changes: { stopLoss?: number; takeProfit?: number },
+): Promise<TradeResult> {
+  await ctx.openPositions.open();
+  const expected: Array<[string, number | undefined]> = [
+    ['Stop Loss', changes.stopLoss],
+    ['Take Profit', changes.takeProfit],
+  ];
+  await expect(async () => {
+    if (!(await ctx.dialogs.edit.root.isVisible())) await ctx.openPositions.edit(orderId);
+    await ctx.dialogs.edit.setStops(changes);
+    await ctx.dialogs.edit.update();
+    await ctx.dialogs.confirmation.confirmButton.waitFor({ timeout: 2_000 });
+    const shown = await ctx.dialogs.confirmation.details();
+    const matches = expected.every(
+      ([label, value]) => value === undefined || parseUiNumber(shown[label] ?? '') === value,
+    );
+    if (!matches) await ctx.dialogs.confirmation.cancel();
+    expect(matches, 'confirmation shows the edited values').toBe(true);
+  }).toPass({ timeout: 20_000 });
+  const result = await captureResult<TradeResult>(ctx.page, 'modifyPosition', () => ctx.dialogs.confirmation.confirm());
+  await ctx.dialogs.edit.root.waitFor({ state: 'hidden' });
+  return result;
+}
+
+/**
+ * Tries an SL/TP change the test expects to be refused. The dialog validates inline and leaves
+ * Update Position clickable, so the flow reports the inline message and whether clicking Update
+ * still led to a confirmation or a request. A confirmation that does appear is cancelled.
+ */
+export async function attemptPositionEdit(
+  ctx: Pick<FlowContext, 'page' | 'dialogs'> & { openPositions: OpenPositionsTab },
+  orderId: string,
+  changes: { stopLoss?: number; takeProfit?: number },
+): Promise<{ message: string; confirmationShown: boolean; requestsSent: number }> {
+  await ctx.openPositions.open();
+  let message = '';
+  // A list refresh right after a trade can reset or close the dialog, which drops the message.
+  await expect(async () => {
+    if (!(await ctx.dialogs.edit.root.isVisible())) await ctx.openPositions.edit(orderId);
+    await ctx.dialogs.edit.setStops(changes);
+    message = await ctx.dialogs.edit.validationMessage.innerText({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+  let confirmationShown = false;
+  const requestsSent = await requestsDuring(ctx.page, 'modifyPosition', async () => {
+    await ctx.dialogs.edit.update();
+    confirmationShown = await ctx.dialogs.confirmation.confirmButton
+      .waitFor({ timeout: 3_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (confirmationShown) await ctx.dialogs.confirmation.cancel();
+  });
+  // The dialog may already have been closed by a list refresh; either way it must not stay open.
+  await ctx.dialogs.edit.cancel({ timeout: 2_000 }).catch(() => undefined);
+  await ctx.dialogs.edit.root.waitFor({ state: 'hidden' });
+  return { message, confirmationShown, requestsSent };
+}
+
+/** Closes `lots` of a position through its Close button (One-Click off). Returns the PUT result. */
+export async function closePosition(
+  ctx: Pick<FlowContext, 'page' | 'dialogs'> & { openPositions: OpenPositionsTab },
+  orderId: string,
+  lots: number,
+): Promise<TradeResult> {
+  await ctx.openPositions.open();
+  await ctx.openPositions.close(orderId);
+  return captureResult<TradeResult>(ctx.page, 'closePosition', () => ctx.dialogs.close.closeVolume(lots));
+}
+
+/** Bulk Close with the chosen option; returns the IDs the backend closed. */
+export async function bulkClose(
+  ctx: Pick<FlowContext, 'page' | 'dialogs'> & { openPositions: OpenPositionsTab },
+  option: BulkCloseOption,
+): Promise<BulkCloseResult> {
+  await ctx.openPositions.open();
+  await ctx.openPositions.chooseBulkClose(option);
+  return captureResult<BulkCloseResult>(ctx.page, 'bulkClose', () => ctx.dialogs.bulk.confirm());
+}
+
+/**
+ * Bulk Close that also returns the account's positions right before and right after the click, for
+ * options that depend on live P/L. The app picks the positions from its own price feed and the backend
+ * refuses the request (HTTP 400, "No orders are closed") when none of them is still in the requested
+ * state, so the click is repeated with a fresh snapshot until something is closed.
+ */
+export async function bulkCloseBracketed(
+  ctx: Pick<FlowContext, 'page' | 'dialogs' | 'api'> & { openPositions: OpenPositionsTab },
+  option: BulkCloseOption,
+): Promise<{ before: OpenPosition[]; result: BulkCloseResult; after: OpenPosition[] }> {
+  let outcome: { before: OpenPosition[]; result: BulkCloseResult } | undefined;
+  await expect(async () => {
+    await ctx.openPositions.open();
+    const before = await ctx.api.openPositions();
+    await ctx.openPositions.chooseBulkClose(option);
+    const response = await captureResponse(ctx.page, 'bulkClose', () => ctx.dialogs.bulk.confirm());
+    const body = (await response.json()) as ApiEnvelope<BulkCloseResult>;
+    await ctx.dialogs.bulk.root.waitFor({ state: 'hidden', timeout: 5_000 });
+    expect(body.code, `bulk close accepted (${body.message ?? ''})`).toBe('200');
+    outcome = { before, result: body.result };
+  }).toPass({ timeout: 40_000 });
+  return { ...outcome!, after: await ctx.api.openPositions() };
+}
+
+/** Bulk Delete of pending orders with the chosen option; returns the IDs the backend deleted. */
+export async function bulkDeletePending(
+  ctx: Pick<FlowContext, 'page' | 'dialogs'> & { pendingOrders: PendingOrdersTab },
+  option: BulkDeleteOption = 'All Orders',
+): Promise<BulkDeleteResult> {
+  await ctx.pendingOrders.open();
+  await ctx.pendingOrders.chooseBulkDelete(option);
+  return captureResult<BulkDeleteResult>(ctx.page, 'bulkDeletePending', () => ctx.dialogs.bulk.confirm());
 }
 
 /** Waits until the order appears among open positions (the list is refreshed asynchronously). */

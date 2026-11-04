@@ -13,6 +13,8 @@ export class EditPositionDialog extends BasePage {
   readonly price = this.root.locator('input[name="price"]');
   readonly stopLoss = this.testId('trade-input-stoploss-price', this.root);
   readonly takeProfit = this.testId('trade-input-takeprofit-price', this.root);
+  /** Inline validation message, e.g. "Stop Loss must be less than Sell Price." */
+  readonly validationMessage = this.root.getByText(/must be/);
   readonly updateButton = this.testId('edit-button-order', this.root);
   readonly cancelButton = this.testId('edit-button-cancel', this.root);
 
@@ -36,7 +38,7 @@ export class EditPositionDialog extends BasePage {
     await this.updateButton.click();
   }
 
-  async cancel(): Promise<void> {
-    await this.cancelButton.click();
+  async cancel(options?: { timeout?: number }): Promise<void> {
+    await this.cancelButton.click(options);
   }
 }

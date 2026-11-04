@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 /** Gear menu in the header. The One-Click toggle's testid encodes its state. */
@@ -13,8 +13,12 @@ export class SettingsMenu extends BasePage {
   }
 
   private async openMenu(): Promise<void> {
-    if (!(await this.oneClickOff.or(this.oneClickOn).isVisible())) await this.trigger.click();
-    await this.oneClickOff.or(this.oneClickOn).waitFor();
+    const toggle = this.oneClickOff.or(this.oneClickOn);
+    // A click right after the page loads can be lost before the header is interactive, so it is retried.
+    await expect(async () => {
+      if (!(await toggle.isVisible())) await this.trigger.click();
+      await toggle.waitFor({ timeout: 3_000 });
+    }).toPass({ timeout: 15_000 });
   }
 
   private async closeMenu(): Promise<void> {

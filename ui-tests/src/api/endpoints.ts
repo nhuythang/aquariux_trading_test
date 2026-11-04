@@ -26,6 +26,8 @@ export const endpoints = {
   modifyPending: api('PATCH', /\/api\/trade\/trade\/v1\/limit$/),
   closePosition: api('PUT', /\/api\/trade\/trade\/v1$/),
   bulkClose: api('PUT', /\/api\/trade\/trade\/v1\/bulk$/),
+  /** Bulk Delete of pending orders; the body is the list of `{orderId, symbol}`. */
+  bulkDeletePending: api('PUT', /\/api\/trade\/trade\/v1\/limit\/bulk$/),
   deletePending: api('DELETE', /\/api\/trade\/trade\/v1\?/),
 
   openPositions: api('GET', /\/api\/trade\/order\/v1$/),

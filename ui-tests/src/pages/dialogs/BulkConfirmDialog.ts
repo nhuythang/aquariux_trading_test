@@ -3,8 +3,10 @@ import { BasePage } from '../BasePage';
 
 /** Bulk Close / Bulk Delete confirmation. Shown even when One-Click Trading is on. */
 export class BulkConfirmDialog extends BasePage {
-  readonly confirmButton = this.testId('bulk-close-modal-button-submit-all');
-  readonly cancelButton = this.testId('bulk-close-modal-button-cancel-all');
+  // The button testids carry the option (-all, -loss, ...), so the buttons are found by name instead.
+  readonly root = this.page.getByRole('dialog');
+  readonly confirmButton = this.root.getByRole('button', { name: 'Confirm' });
+  readonly cancelButton = this.root.getByRole('button', { name: 'Cancel' });
 
   constructor(page: Page) {
     super(page);

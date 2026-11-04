@@ -49,6 +49,13 @@ export interface BulkCloseResult {
   closedOrderIds: number[];
 }
 
+/** Response of PUT /api/trade/trade/v1/limit/bulk */
+export interface BulkDeleteResult {
+  account: string;
+  horizonAccountType: string;
+  deletedOrderIds: number[];
+}
+
 /** GET /api/market/v1/symbol/detail?symbol= */
 export interface SymbolDetail {
   symbol: string;
