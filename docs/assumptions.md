@@ -35,6 +35,10 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 | R10 | Pending orders use Fill Policy **Return**; market orders default to **Fill or Kill**. | Observed | Order panel defaults |
 | R11 | Invalid SL/TP or volume shows an inline message ("Stop Loss must be less than Sell Price.", "Minimum volume is 0.1."). The submit button is **not** disabled, so the tests check that the order cannot reach the confirmation step and that no trade request is sent. | Observed | MO-03, MO-04, MO-05a |
 | R12 | The volume input rounds a value that is not a multiple of the step when it loses focus (0.15 → 0.1). | Observed | MO-05b |
+| R13 | All pending types (Limit, Stop, Stop Limit) are placed with `POST /api/trade/trade/v1/limit` and modified with `PATCH` on the same path; `orderType` tells them apart (2 buy limit, 3 sell limit, 4 buy stop, 5 sell stop, 8 buy stop limit). | Observed | PO-01…05, PO-09 |
+| R14 | The panel does not check the side of a pending price: a Buy Limit above the Ask reaches the confirmation and the backend rejects it with HTTP 400, code `MT4_1009` "Metatrader Invalid Price". | Observed | PO-06 |
+| R15 | Stop Limit: the form's "Price" is the stop (trigger) price and "Stop Limit Price" is the limit price, sent as `priceTrigger`. The Pending Orders grid shows only the stop price. | Observed | PO-05 |
+| R16 | Expiry types: Good Till Canceled → `GTC`, Good Till Day → `GTD`, Specified Date → `SPECIFIED_DAY` (with an `expiration` timestamp). Past days are disabled in the calendar. | Observed | PO-07, PO-08 |
 
 ## 3. Interpretation of the brief
 
@@ -47,6 +51,8 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 | I5 | "If market close…" | Mocked tests for closed-market behaviour that run at any time, plus one live check skipped when no symbol is closed | Keeps the suite runnable at weekends and in CI. |
 
 ## 4. Known limitations
+
+- After every trade the app refetches the order lists for about 1.5 s; a refetch can reset or close an open Edit Order dialog. The edit flow retries until the Order Confirmation shows the entered values (observed as a usability issue: slow typing can lose edits).
 
 - `@live` results depend on demo-server availability and market hours (E3).
 - Profitable / Loss bulk close depends on live P/L at click time, so the expected set is read from the API just before the action.

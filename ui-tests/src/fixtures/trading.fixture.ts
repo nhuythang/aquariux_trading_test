@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test';
+import { expect, test as base } from '@playwright/test';
 import { TraderApi } from '@src/api/client';
 import { Recorder } from '@src/api/recorder';
 import { NotificationPanel } from '@src/pages/NotificationPanel';
@@ -13,12 +13,14 @@ import { PositionsHistoryTab } from '@src/pages/assets/PositionsHistoryTab';
 import { BulkConfirmDialog } from '@src/pages/dialogs/BulkConfirmDialog';
 import { ClosePositionDialog } from '@src/pages/dialogs/ClosePositionDialog';
 import { DeleteOrderDialog } from '@src/pages/dialogs/DeleteOrderDialog';
+import { EditPendingOrderDialog } from '@src/pages/dialogs/EditPendingOrderDialog';
 import { EditPositionDialog } from '@src/pages/dialogs/EditPositionDialog';
 import { OrderConfirmationDialog } from '@src/pages/dialogs/OrderConfirmationDialog';
 
 export interface Dialogs {
   confirmation: OrderConfirmationDialog;
   edit: EditPositionDialog;
+  editPending: EditPendingOrderDialog;
   close: ClosePositionDialog;
   deleteOrder: DeleteOrderDialog;
   bulk: BulkConfirmDialog;
@@ -96,6 +98,7 @@ export const test = base.extend<TradingFixtures>({
     use({
       confirmation: new OrderConfirmationDialog(page),
       edit: new EditPositionDialog(page),
+      editPending: new EditPendingOrderDialog(page),
       close: new ClosePositionDialog(page),
       deleteOrder: new DeleteOrderDialog(page),
       bulk: new BulkConfirmDialog(page),
@@ -104,6 +107,8 @@ export const test = base.extend<TradingFixtures>({
   /**
    * Teardown removes only what the test created: pending orders through the API,
    * positions through the UI Close action. Runs even when the test failed.
+   * Success is judged by the API, never by a row disappearing (list refreshes hide rows briefly),
+   * and anything still open at the end fails the test so a leak cannot go unnoticed.
    */
   created: async ({ api, assets, dialogs }, use) => {
     const created = new CreatedOrders();
@@ -112,21 +117,25 @@ export const test = base.extend<TradingFixtures>({
     for (const [orderId, symbol] of created.pending) {
       if (await api.pendingOrder(orderId)) await api.deletePending(symbol, orderId);
     }
-    if (created.positions.size === 0) return;
-    await assets.openPositions.open();
+
     for (const orderId of created.positions.keys()) {
-      const position = await api.openPosition(orderId);
-      if (!position) continue;
-      const row = assets.openPositions.row(orderId);
-      await assets.openPositions.close(orderId);
-      // With One-Click Trading on, Close acts immediately; otherwise a dialog asks for the volume.
-      await dialogs.close.root.or(row).first().waitFor();
-      if (await dialogs.close.confirmButton.isVisible()) {
-        await dialogs.close.closeAll(position.lotSize);
-        await dialogs.close.confirm();
-      }
-      await row.waitFor({ state: 'detached' });
+      await expect(async () => {
+        const position = await api.openPosition(orderId);
+        if (!position) return;
+        await assets.openPositions.open();
+        await assets.openPositions.close(orderId);
+        // With One-Click Trading on, Close acts immediately; otherwise a dialog asks for the volume.
+        await dialogs.close.root.or(assets.openPositions.row(orderId)).first().waitFor();
+        if (await dialogs.close.root.isVisible()) await dialogs.close.closeVolume(position.lotSize);
+        await expect.poll(() => api.openPosition(orderId), { timeout: 10_000 }).toBeUndefined();
+      }).toPass({ timeout: 60_000 });
     }
+
+    const leftovers = [
+      ...(await api.openPositions()).filter((p) => created.positions.has(p.orderId)).map((p) => p.orderId),
+      ...(await api.pendingOrders()).filter((o) => created.pending.has(o.orderId)).map((o) => o.orderId),
+    ];
+    expect(leftovers, 'orders created by this test are still open after cleanup').toEqual([]);
   },
 
   recorder: async ({}, use, testInfo) => {

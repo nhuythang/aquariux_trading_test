@@ -76,10 +76,10 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | PO-02 | Sell Limit above Bid, GTC | Positive | P1 | UI | As PO-01 |
 | PO-03 | Buy Stop above Ask | Positive | P2 | UI | Type BUY STOP |
 | PO-04 | Sell Stop below Bid | Positive | P2 | UI | Type SELL STOP |
-| PO-05 | Buy Stop Limit (stop + limit price) | Positive | P3 | UI | Type BUY STOP LIMIT with both prices |
-| PO-06 | Buy Limit above Ask (wrong side) | Negative | P1 | UI | Rejected / validation, no pending order |
-| PO-07 | Each expiry option: Good Till Day, Specified Date, Specified Date and Time | Positive | P2 | UI | Expiry and expiry date shown as chosen |
-| PO-08 | Specified Date in the past | Negative | P2 | UI | Date not selectable or order rejected |
+| PO-05 | Buy Stop Limit (stop + limit price) | Positive | P3 | UI | Type BUY STOP LIMIT; API `price` = stop, `priceTrigger` = limit; confirmation shows both (grid shows only the stop price) |
+| PO-06 | Buy Limit above Ask (wrong side) | Negative | P1 | UI | Backend rejects: HTTP 400 `MT4_1009` "Metatrader Invalid Price"; pending list unchanged (the panel itself does not block it) |
+| PO-07 | Expiry Good Till Day (07a) and Specified Date (07b) | Positive | P2 | UI | `tradeExpiry` GTD / SPECIFIED_DAY; expiry and expiry date shown as chosen |
+| PO-08 | Specified Date in the past | Negative | P2 | UI | Past days disabled in the calendar |
 | PO-09 | Modify pending price and SL/TP | Positive | P2 | UI | New values in row and API |
 | PO-10 | Delete pending order | Positive | P1 | UI | Removed from Pending; Orders & Deals shows CANCELED |
 

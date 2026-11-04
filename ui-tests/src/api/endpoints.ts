@@ -20,8 +20,10 @@ export const endpoints = {
 
   placeMarket: api('POST', /\/api\/trade\/trade\/v1\/market$/),
   modifyPosition: api('PATCH', /\/api\/trade\/trade\/v1\/market$/),
-  placeLimit: api('POST', /\/api\/trade\/trade\/v1\/limit$/),
-  placeStop: api('POST', /\/api\/trade\/trade\/v1\/stop$/),
+  /** Every pending type (Limit, Stop, Stop Limit) is posted here; `orderType` in the body tells them apart. */
+  placePending: api('POST', /\/api\/trade\/trade\/v1\/limit$/),
+  /** Editing a pending order (Edit Order dialog) is a PATCH on the same path as placing one. */
+  modifyPending: api('PATCH', /\/api\/trade\/trade\/v1\/limit$/),
   closePosition: api('PUT', /\/api\/trade\/trade\/v1$/),
   bulkClose: api('PUT', /\/api\/trade\/trade\/v1\/bulk$/),
   deletePending: api('DELETE', /\/api\/trade\/trade\/v1\?/),

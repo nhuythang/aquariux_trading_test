@@ -16,9 +16,9 @@ export type ExpiryType = 'GTC' | 'GTD' | 'SPECIFIED_TIMESTAMP' | 'SPECIFIED_DAY'
 
 /**
  * Order type codes as returned in `orderType`.
- * Observed: 0 (buy), 1 (sell), 2 (buy limit), 6 (balance row in history).
- * 3–5 follow MT5 numbering and are confirmed by the pending-order specs.
- * Stop Limit codes are not known yet, so they are not declared.
+ * Observed: 0 (buy), 1 (sell), 2 (buy limit), 3 (sell limit), 4 (buy stop), 5 (sell stop),
+ * 6 (balance row in history), 8 (buy stop limit).
+ * The sell stop limit code is not observed yet, so it is not declared.
  */
 export const ORDER_TYPE = {
   BUY: 0,
@@ -28,6 +28,7 @@ export const ORDER_TYPE = {
   BUY_STOP: 4,
   SELL_STOP: 5,
   BALANCE: 6,
+  BUY_STOP_LIMIT: 8,
 } as const;
 
 /** MT5 order states seen in Orders & Deals. */
@@ -90,6 +91,8 @@ export interface PendingOrder {
   lotSize: number;
   units: number;
   price: number;
+  /** Stop Limit only: the "Stop Limit Price" (limit price placed once Price is reached); null/0 otherwise. */
+  priceTrigger: number | null;
   stopLoss: number;
   takeProfit: number;
   orderType: number;

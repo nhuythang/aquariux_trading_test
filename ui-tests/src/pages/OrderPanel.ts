@@ -10,9 +10,18 @@ export interface OrderForm {
   type: OrderTypeLabel;
   volume: number;
   price?: number;
+  /** Stop Limit only: the "Stop Limit Price" field. */
+  stopLimitPrice?: number;
   stopLoss?: number;
   takeProfit?: number;
   expiry?: ExpiryLabel;
+  /** For "Specified Date": the day to pick in the calendar. */
+  expiryDate?: Date;
+}
+
+/** Calendar tiles are labelled like "November 6, 2026". */
+export function calendarLabel(date: Date): string {
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 /**
@@ -35,12 +44,16 @@ export class OrderPanel extends BasePage {
   readonly orderType = this.testId('trade-dropdown-order-type', this.root);
   readonly volume = this.testId('trade-input-volume', this.root);
   readonly price = this.root.locator('input[name="price"]');
+  readonly stopLimitPrice = this.root.locator('input[name="priceTrigger"]');
   readonly stopLossPrice = this.testId('trade-input-stoploss-price', this.root);
   readonly stopLossPoints = this.testId('trade-input-stoploss-points', this.root);
   readonly takeProfitPrice = this.testId('trade-input-takeprofit-price', this.root);
   readonly takeProfitPoints = this.testId('trade-input-takeprofit-points', this.root);
   readonly fillPolicy = this.testId('trade-dropdown-fill-policy', this.root);
   readonly expiry = this.testId('trade-dropdown-expiry', this.root);
+  readonly expiryDate = this.testId('trade-input-expiry-date', this.root);
+  /** react-calendar popup opened from the expiry date field. */
+  readonly calendar = this.page.locator('.react-calendar');
   readonly submitButton = this.testId('trade-button-order', this.root);
 
   constructor(page: Page) {
@@ -68,6 +81,26 @@ export class OrderPanel extends BasePage {
     await this.expiry.getByText(label, { exact: true }).last().click();
   }
 
+  /** Calendar day button for `date`; past days are rendered disabled. */
+  calendarDay(date: Date): Locator {
+    return this.calendar.locator('.react-calendar__tile').filter({
+      has: this.page.locator(`abbr[aria-label="${calendarLabel(date)}"]`),
+    });
+  }
+
+  async openCalendar(): Promise<void> {
+    await this.expiryDate.click();
+    await this.calendar.waitFor();
+  }
+
+  /** Picks a day in the calendar, moving forward month by month if needed. */
+  async pickExpiryDate(date: Date): Promise<void> {
+    await this.openCalendar();
+    const next = this.calendar.locator('.react-calendar__navigation__next-button');
+    for (let i = 0; i < 12 && (await this.calendarDay(date).count()) === 0; i++) await next.click();
+    await this.calendarDay(date).click();
+  }
+
   /** Inline validation message under a field, e.g. "Stop Loss must be less than Sell Price." */
   validationMessage(text: RegExp): Locator {
     return this.root.getByText(text);
@@ -88,9 +121,11 @@ export class OrderPanel extends BasePage {
     await this.selectSide(form.side);
     await this.setVolume(form.volume);
     if (form.price !== undefined) await this.price.fill(String(form.price));
+    if (form.stopLimitPrice !== undefined) await this.stopLimitPrice.fill(String(form.stopLimitPrice));
     if (form.stopLoss !== undefined) await this.stopLossPrice.fill(String(form.stopLoss));
     if (form.takeProfit !== undefined) await this.takeProfitPrice.fill(String(form.takeProfit));
     if (form.expiry) await this.selectExpiry(form.expiry);
+    if (form.expiryDate) await this.pickExpiryDate(form.expiryDate);
   }
 
   /** "PLACE BUY ORDER" / "PLACE SELL ORDER" when the form is valid, "STAY TUNED" otherwise. */

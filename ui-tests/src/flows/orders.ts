@@ -1,10 +1,11 @@
 import { expect, type Page } from '@playwright/test';
-import { captureResult, requestsDuring } from '@src/api/capture';
+import { captureResponse, captureResult, requestsDuring } from '@src/api/capture';
 import type { TraderApi } from '@src/api/client';
-import type { OpenPosition, PendingOrder, SymbolDetail, TradeResult } from '@src/domain/models';
-import { validStops } from '@src/domain/price';
+import type { ApiEnvelope, OpenPosition, PendingOrder, SymbolDetail, TradeResult } from '@src/domain/models';
+import { parseUiNumber, validStops } from '@src/domain/price';
 import type { CreatedOrders, Dialogs } from '@src/fixtures/trading.fixture';
 import type { OrderForm, OrderPanel } from '@src/pages/OrderPanel';
+import type { PendingOrdersTab } from '@src/pages/assets/PendingOrdersTab';
 
 /**
  * Multi-step user actions reused by several specs. A flow drives page objects, captures the
@@ -31,7 +32,7 @@ export interface PlacedOrder {
 
 /** Market or pending order through the Trade tab with the confirmation dialog (One-Click off). */
 export async function placeOrder(ctx: FlowContext, symbol: string, form: OrderForm): Promise<PlacedOrder> {
-  const endpoint = form.type === 'Market' ? 'placeMarket' : form.type === 'Limit' ? 'placeLimit' : 'placeStop';
+  const endpoint = form.type === 'Market' ? 'placeMarket' : 'placePending';
   await ctx.orderPanel.open();
   await ctx.orderPanel.fill(form);
   await ctx.orderPanel.submit();
@@ -66,6 +67,23 @@ export async function attemptInvalidSubmit(
   return { confirmationShown, requestsSent };
 }
 
+/**
+ * Submits a form the panel does not validate and confirms it, so the backend decides.
+ * Returns the trade response (status and error code) instead of throwing on a rejection.
+ */
+export async function placeRejectedOrder(
+  ctx: Pick<FlowContext, 'page' | 'orderPanel' | 'dialogs'>,
+  form: OrderForm,
+): Promise<{ status: number; code: string; message: string | undefined }> {
+  await ctx.orderPanel.open();
+  await ctx.orderPanel.fill(form);
+  await ctx.orderPanel.submit();
+  await ctx.dialogs.confirmation.confirmButton.waitFor();
+  const response = await captureResponse(ctx.page, 'placePending', () => ctx.dialogs.confirmation.confirm());
+  const body = (await response.json()) as ApiEnvelope<unknown>;
+  return { status: response.status(), code: body.code, message: body.message };
+}
+
 /** Market order with SL/TP `distancePoints` away from the current price, on the correct side. */
 export async function placeMarketWithStops(
   ctx: FlowContext,
@@ -80,6 +98,52 @@ export async function placeMarketWithStops(
   const { stopLoss, takeProfit } = validStops(side, reference, spec, distancePoints);
   const placed = await placeOrder(ctx, spec.symbol, { side, type: 'Market', volume, stopLoss, takeProfit });
   return { ...placed, stopLoss, takeProfit };
+}
+
+/** Edits a pending order through its row's Edit button, then confirms. */
+export async function editPendingOrder(
+  ctx: Pick<FlowContext, 'page' | 'dialogs'> & { pendingOrders: PendingOrdersTab },
+  orderId: string,
+  changes: { price?: number; stopLoss?: number; takeProfit?: number },
+): Promise<void> {
+  await ctx.pendingOrders.open();
+  // After a trade the app refetches the order lists several times over ~1.5 s. A refresh resets the open
+  // Edit Order form to the stored values (typed input is lost, a stale validation error blocks Confirm) or
+  // closes the dialog altogether. So the edit is repeated until the Order Confirmation shows exactly
+  // what was entered.
+  const expected: Array<[string, number | undefined]> = [
+    ['Price', changes.price],
+    ['Stop Loss', changes.stopLoss],
+    ['Take Profit', changes.takeProfit],
+  ];
+  await expect(async () => {
+    if (!(await ctx.dialogs.editPending.root.isVisible())) await ctx.pendingOrders.edit(orderId);
+    await ctx.dialogs.editPending.setValues(changes);
+    await ctx.dialogs.editPending.confirm();
+    await ctx.dialogs.confirmation.confirmButton.waitFor({ timeout: 2_000 });
+    const shown = await ctx.dialogs.confirmation.details();
+    const matches = expected.every(
+      ([label, value]) => value === undefined || parseUiNumber(shown[label] ?? '') === value,
+    );
+    if (!matches) await ctx.dialogs.confirmation.cancel();
+    expect(matches, 'confirmation shows the edited values').toBe(true);
+  }).toPass({ timeout: 20_000 });
+  // The Edit Order dialog stays open underneath an Order Confirmation that applies the change.
+  await captureResult(ctx.page, 'modifyPending', () => ctx.dialogs.confirmation.confirm());
+  await ctx.dialogs.editPending.root.waitFor({ state: 'hidden' });
+}
+
+/** Deletes a pending order through its row's Delete button and the confirmation dialog. */
+export async function deletePendingOrder(
+  ctx: Pick<FlowContext, 'page' | 'dialogs'> & { pendingOrders: PendingOrdersTab },
+  orderId: string,
+): Promise<void> {
+  await ctx.pendingOrders.open();
+  await captureResponse(ctx.page, 'deletePending', async () => {
+    await ctx.pendingOrders.delete(orderId);
+    await ctx.dialogs.deleteOrder.confirm();
+  });
+  await ctx.pendingOrders.row(orderId).waitFor({ state: 'detached' });
 }
 
 /** Waits until the order appears among open positions (the list is refreshed asynchronously). */

@@ -29,10 +29,10 @@ export class PendingOrdersTab extends AssetTab<PendingOrderColumn> {
   }
 
   async edit(orderId: string): Promise<void> {
-    await this.row(orderId).getByTestId('asset-pending-button-edit').click();
+    await this.row(orderId).getByTestId('asset-open-button-edit').click();
   }
 
   async delete(orderId: string): Promise<void> {
-    await this.row(orderId).getByTestId('asset-pending-button-close').click();
+    await this.row(orderId).getByTestId('asset-open-button-close').click();
   }
 }
