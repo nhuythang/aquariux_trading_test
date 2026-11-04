@@ -276,7 +276,11 @@ export async function bulkDeletePending(
 }
 
 /** Waits until the order appears among open positions (the list is refreshed asynchronously). */
-export async function waitForPosition(api: TraderApi, orderId: string, timeout = 15_000): Promise<OpenPosition> {
+/**
+ * The trade response arrives before the order shows up in the lists; on a busy demo server that has
+ * taken more than 15 s, so the default leaves room for it.
+ */
+export async function waitForPosition(api: TraderApi, orderId: string, timeout = 30_000): Promise<OpenPosition> {
   let position: OpenPosition | undefined;
   await expect
     .poll(async () => (position = await api.openPosition(orderId)), { timeout, message: `position ${orderId}` })
@@ -284,7 +288,7 @@ export async function waitForPosition(api: TraderApi, orderId: string, timeout =
   return position!;
 }
 
-export async function waitForPending(api: TraderApi, orderId: string, timeout = 15_000): Promise<PendingOrder> {
+export async function waitForPending(api: TraderApi, orderId: string, timeout = 30_000): Promise<PendingOrder> {
   let order: PendingOrder | undefined;
   await expect
     .poll(async () => (order = await api.pendingOrder(orderId)), { timeout, message: `pending order ${orderId}` })

@@ -128,9 +128,9 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 
 | ID | Scenario | Type | Pri | Layer | Expected |
 | --- | --- | --- | --- | --- | --- |
-| MC-01 | Symbol mocked as CLOSED | Negative | P2 | M | Order buttons disabled or clear message; no trade request sent |
-| MC-02 | Trade endpoint mocked to return a market-closed error | Negative | P2 | M | Error message shown; no position added |
-| MC-03 | Pending order on a closed market (if allowed) | Positive | P3 | M | Pending created or rejected, as the UI indicates |
+| MC-01 | Symbol mocked as CLOSED | Negative | P2 | M | Panel locked ("restricted for trading"), button "Market Closed" disabled; no trade request sent |
+| MC-02 | Trade endpoint mocked to return a market-closed error | Negative | P2 | M | Toast shows the backend message; no position added |
+| MC-03 | Pending order on a closed market | Negative | P3 | M | Not possible: order type cannot be changed, button disabled, no request |
 | MC-04 | Real closed symbol at run time | Negative | P3 | UI | As MC-01; skipped when no symbol is closed |
 
 ### Account guards (not counted below)

@@ -71,6 +71,10 @@ export interface SymbolDetail {
   bid: number;
   status: string;
   tradable: boolean;
+  tradableExeMode: boolean;
+  holiday: boolean;
+  online: boolean;
+  closable: boolean;
   orderTypes: OrderKind[];
   expirationTypes: ExpiryType[];
 }
@@ -184,4 +188,11 @@ export interface OrderNotification {
     profit: number;
     openTime: number;
   };
+}
+
+/** One entry of GET /api/market/v1/symbols/all. `status` is TRADING, CLOSED or OFFQUOTES. */
+export interface SymbolSummary {
+  symbol: string;
+  type: string;
+  status: string;
 }

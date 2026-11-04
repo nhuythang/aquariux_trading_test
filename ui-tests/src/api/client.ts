@@ -8,6 +8,7 @@ import type {
   OrderNotification,
   PendingOrder,
   SymbolDetail,
+  SymbolSummary,
 } from '@src/domain/models';
 
 /**
@@ -67,6 +68,10 @@ export class TraderApi {
 
   symbolDetail(symbol: string): Promise<SymbolDetail> {
     return this.call('GET', `/api/market/v1/symbol/detail?symbol=${encodeURIComponent(symbol)}`);
+  }
+
+  symbols(): Promise<SymbolSummary[]> {
+    return this.call('GET', '/api/market/v1/symbols/all');
   }
 
   openPositions(): Promise<OpenPosition[]> {

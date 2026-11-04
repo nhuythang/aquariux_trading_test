@@ -55,6 +55,8 @@ export class OrderPanel extends BasePage {
   /** react-calendar popup opened from the expiry date field. */
   readonly calendar = this.page.locator('.react-calendar');
   readonly submitButton = this.testId('trade-button-order', this.root);
+  /** Overlay shown over the panel when the selected symbol cannot be traded (market closed, holiday). */
+  readonly restrictedNotice = this.page.getByText('This symbol is currently restricted for trading.');
 
   constructor(page: Page) {
     super(page);
@@ -128,7 +130,7 @@ export class OrderPanel extends BasePage {
     if (form.expiryDate) await this.pickExpiryDate(form.expiryDate);
   }
 
-  /** "PLACE BUY ORDER" / "PLACE SELL ORDER" when the form is valid, "STAY TUNED" otherwise. */
+  /** "PLACE BUY ORDER" / "PLACE SELL ORDER" when the form is valid, "STAY TUNED" otherwise, "Market Closed" on a closed symbol (upper case is CSS only). */
   async submitLabel(): Promise<string> {
     return (await this.submitButton.innerText()).trim();
   }
