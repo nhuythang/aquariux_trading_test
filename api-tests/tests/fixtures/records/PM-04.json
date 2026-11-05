@@ -1,15 +1,15 @@
 {
   "testId": "PM-04",
-  "capturedAt": "2026-11-04T13:16:37.310Z",
+  "capturedAt": "2026-11-05T01:28:39.409Z",
   "records": {
     "closePositionResponse": {
-      "positionId": "2816376",
-      "positionReference": "2816376",
-      "clOrdId": "2816376",
-      "traceId": "ac516517-228b-403b-ba69-b8cc383def4a"
+      "positionId": "3105247",
+      "positionReference": "3105247",
+      "clOrdId": "3105247",
+      "traceId": "38fea847-30ea-431c-9243-5b00b34d6f40"
     },
     "closing": {
-      "orderId": "2816377",
+      "orderId": "3105248",
       "symbol": "XAUUSD",
       "volume": 1000,
       "volumeFilled": 1000,
@@ -17,7 +17,7 @@
       "lotSizeFilled": 0.1,
       "units": 10,
       "decimal": 2,
-      "openPrice": 4035.32,
+      "openPrice": 4101.56,
       "takeProfit": 0,
       "stopLoss": 0,
       "orderType": 1,
@@ -26,29 +26,29 @@
       "status": null,
       "deals": [
         {
-          "dealId": "1969383",
+          "dealId": "2258220",
           "symbol": "XAUUSD",
-          "takeProfit": 4045.17,
-          "stopLoss": 4025.17,
+          "takeProfit": 4112.05,
+          "stopLoss": 4092.05,
           "lotSize": 0.1,
           "volume": 1000,
           "units": 10,
           "swap": 0,
           "commission": 0,
           "fee": 0,
-          "price": 4035.32,
-          "profit": -2.5,
+          "price": 4101.56,
+          "profit": -6.6,
           "dealType": 1,
           "direction": 1,
           "reason": 2,
-          "comment": "wt|oc:aQrLH8vMxYKS0wkpygMQ-DD",
-          "openTime": 1793798194000
+          "comment": "wt|oc:avOYhKP5FBDCAWIzx7rP-DD",
+          "openTime": 1793842117000
         }
       ],
       "symbolType": "COM",
       "remarks": null,
-      "openTime": 1793798194000,
-      "closeTime": 1793798194000,
+      "openTime": 1793842117000,
+      "closeTime": 1793842117000,
       "isEnable": true,
       "copyTradeInfo": null,
       "comment": null

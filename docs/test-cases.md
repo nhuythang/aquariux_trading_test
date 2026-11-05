@@ -1,6 +1,6 @@
 # Test cases – Aquariux Web Trader
 
-Status: **draft for review** (2026-11-04). The "Auto" column will be filled in as specs are written.
+Status: **implemented** (2026-11-04). Every case below has an automated test with the same ID (`ui-tests/tests/`, or `api-tests/` for CR-04); a/b/c suffixes are separate tests of one case.
 
 ## 1. Scope analysis
 
@@ -23,7 +23,7 @@ The brief lists 7 functional areas. Exploration of the demo account (MT5 bridge,
 | --- | --- | --- |
 | Primary | **XAUUSD** | Live feed, 2 decimals, `stopsLevel` 0, min/step 0.1 lot |
 | Second / third symbol (bulk, netting) | XAGUSD, XTIUSD | Live and tradable from the web (`tradableExeMode: true`); different symbols avoid netting |
-| Not tradable from the web | GBPJPY | Market open but `tradableExeMode: false`: submit stays on "STAY TUNED" |
+| Not tradable from the web | GBPJPY preferred, else any open symbol with the flag (looked up at run time) | Market open but `tradableExeMode: false`: submit stays on "STAY TUNED" |
 | Market closed (live, optional) | first symbol with `status: CLOSED` at run time (AUDCAD at exploration) | Real closed-market behaviour |
 | Avoid | USDCAD (frozen feed), EURUSD ("test" symbol), `*.Master` | Unreliable prices |
 
@@ -58,6 +58,7 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | MO-05 | Volume below min (0.05) → message, no confirmation, no request (05a); not step-aligned (0.15) → rounded to the step on blur (05b) | Boundary | P2 | UI | See R11, R12 |
 | MO-06 | Market order without SL/TP | Positive | P3 | UI | Position with empty SL/TP (`0` in API, `--` in UI) |
 | MO-07 | Confirmation dialog shows the same values as the form; Cancel places nothing | Positive | P2 | UI | Dialog symbol/side/volume/SL/TP = form; after Cancel, counts unchanged |
+| MO-08 | Symbol open but not tradable from the web (`tradableExeMode: false`; GBPJPY preferred, else looked up) | Negative | P3 | UI | Submit stays on "Stay Tuned"; no trade request (skipped when no open symbol is restricted, e.g. on 2026-11-05) |
 
 ### Scope 2 – One-Click Trading
 
@@ -78,7 +79,7 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | PO-04 | Sell Stop below Bid | Positive | P2 | UI | Type SELL STOP |
 | PO-05 | Buy Stop Limit (stop + limit price) | Positive | P3 | UI | Type BUY STOP LIMIT; API `price` = stop, `priceTrigger` = limit; confirmation shows both (grid shows only the stop price) |
 | PO-06 | Buy Limit above Ask (wrong side) | Negative | P1 | UI | Backend rejects: HTTP 400 `MT4_1009` "Metatrader Invalid Price"; pending list unchanged (the panel itself does not block it) |
-| PO-07 | Expiry Good Till Day (07a) and Specified Date (07b) | Positive | P2 | UI | `tradeExpiry` GTD / SPECIFIED_DAY; expiry and expiry date shown as chosen |
+| PO-07 | Expiry Good Till Day (07a), Specified Date (07b), Specified Date and Time (07c) | Positive | P2 | UI | `tradeExpiry` GTD / SPECIFIED_DAY / SPECIFIED_TIMESTAMP; expiry and expiry date shown as chosen |
 | PO-08 | Specified Date in the past | Negative | P2 | UI | Past days disabled in the calendar |
 | PO-09 | Modify pending price and SL/TP | Positive | P2 | UI | New values in row and API |
 | PO-10 | Delete pending order | Positive | P1 | UI | Removed from Pending; Orders & Deals shows CANCELED |
@@ -91,7 +92,7 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | PM-02 | Modify SL/TP | Positive | P1 | UI | Row and API updated; Order No. unchanged |
 | PM-03 | Modify SL to wrong side | Negative | P2 | UI | Inline message; no confirmation and no request; old SL kept |
 | PM-04 | Partial close 0.1 of 0.2 | Positive | P1 | UI | Remaining 0.1, same Order No.; a SELL 0.1 FILLED order in Orders & Deals |
-| PM-05 | Partial close volume > position or below min | Boundary | P2 | UI | Confirm disabled; volume unchanged |
+| PM-05 | Close volume above the position (05a) or below the minimum (05b) | Boundary | P2 | UI | Confirm disabled; no close request; volume unchanged |
 | PM-06 | Full close | Positive | P1 | UI | Removed from Open Positions; in Positions History with close price and P/L |
 
 ### Scope 5 – Bulk operations
@@ -100,7 +101,8 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | --- | --- | --- | --- | --- | --- |
 | BO-01 | Open 3 positions on 3 symbols → Bulk Close All | Positive | P1 | UI | `closedOrderIds` = the 3 IDs; Open Positions empty; 3 entries in history |
 | BO-02 | Create 3 pending orders → Bulk Delete | Positive | P1 | UI | Pending empty; 3 CANCELED in Orders & Deals |
-| BO-03 | Bulk Close Profitable / Loss | Positive | P3 | UI | Closed IDs ⊆ positions in loss just before the click; none left that were in loss before and after |
+| BO-03 | Bulk Close Loss Positions | Positive | P3 | UI | Closed IDs ⊆ positions in loss just before the click; none left that were in loss before and after |
+| BO-06 | Bulk Close Profitable Positions | Positive | P3 | UI | As BO-03 for profit; skipped if no position moves into profit within 90 s |
 | BO-04 | Bulk Close with no positions | Negative | P3 | UI | Menu opens empty; no dialog, no request |
 | BO-05 | Bulk Close confirmation Cancel | Negative | P3 | UI | Nothing closed |
 
@@ -153,5 +155,5 @@ Layer: **UI** = Playwright E2E, **API** = Python validation, **M** = mocked (`@m
 | --- | --- |
 | P1 | 20 |
 | P2 | 17 |
-| P3 | 9 |
-| Total | 46 |
+| P3 | 11 |
+| Total | 48 |

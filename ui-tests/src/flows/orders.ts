@@ -297,3 +297,16 @@ export async function waitForPending(api: TraderApi, orderId: string, timeout = 
     .toBeDefined();
   return order!;
 }
+
+/**
+ * Polls `check` until it returns true or `timeout` passes, and says which. For conditions a test skips on
+ * rather than fails on (e.g. waiting for live P/L to move), where expect.poll would fail the test.
+ */
+export async function becomesTrue(check: () => Promise<boolean>, timeout: number, interval = 2_000): Promise<boolean> {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    if (await check()) return true;
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+  return false;
+}

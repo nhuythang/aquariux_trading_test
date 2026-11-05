@@ -1,11 +1,11 @@
 {
   "testId": "BO-03",
-  "capturedAt": "2026-11-04T13:17:49.617Z",
+  "capturedAt": "2026-11-05T01:30:07.973Z",
   "records": {
     "bulkClose": {
       "before": [
         {
-          "orderId": "2816393",
+          "orderId": "3105266",
           "symbol": "XAGUSD",
           "currency": "USD",
           "volume": 10,
@@ -17,13 +17,13 @@
           "contractSize": 5000,
           "units": 500,
           "unfilledVolume": null,
-          "openPrice": 51.691,
-          "closePrice": 51.716,
-          "currentPrice": 51.716,
+          "openPrice": 52.471,
+          "closePrice": 52.529,
+          "currentPrice": 52.529,
           "priceTrigger": null,
           "takeProfit": 0,
           "stopLoss": 0,
-          "profit": -12.5,
+          "profit": -29,
           "tickSize": 0,
           "tickValue": 0,
           "commission": null,
@@ -45,9 +45,9 @@
             1
           ],
           "profitMode": 4,
-          "comment": "wt|o:QwWBD7HHK4BQ_xnVOaai-D",
+          "comment": "wt|o:RnD-bLRw85svgLeVmzaa-D",
           "exitMethod": null,
-          "openTime": 1793798265000,
+          "openTime": 1793842203000,
           "closeTime": 0,
           "expiration": 0,
           "isEnable": true,
@@ -70,7 +70,7 @@
           "trackable": true
         },
         {
-          "orderId": "2816392",
+          "orderId": "3105265",
           "symbol": "XAUUSD",
           "currency": "USD",
           "volume": 10,
@@ -82,13 +82,13 @@
           "contractSize": 100,
           "units": 10,
           "unfilledVolume": null,
-          "openPrice": 4035.65,
-          "closePrice": 4037.53,
-          "currentPrice": 4037.53,
+          "openPrice": 4105.11,
+          "closePrice": 4105.68,
+          "currentPrice": 4105.68,
           "priceTrigger": null,
           "takeProfit": 0,
           "stopLoss": 0,
-          "profit": 18.8,
+          "profit": 5.7,
           "tickSize": 0,
           "tickValue": 0,
           "commission": null,
@@ -110,9 +110,9 @@
             1
           ],
           "profitMode": 4,
-          "comment": "wt|o:PyYqPj5P3IGU45VZZrVh-D",
+          "comment": "wt|o:n7ltjeDXf16HdelBBRad-D",
           "exitMethod": null,
-          "openTime": 1793798263000,
+          "openTime": 1793842200000,
           "closeTime": 0,
           "expiration": 0,
           "isEnable": true,
@@ -137,14 +137,14 @@
       ],
       "result": {
         "horizonAccountType": "NET",
-        "traceId": "38f44bb1-a6cd-49c1-bc78-d60132d46565",
+        "traceId": "62e9d734-4f17-4ede-9de2-0d031855a196",
         "closedOrderIds": [
-          2816393
+          3105266
         ]
       },
       "after": [
         {
-          "orderId": "2816392",
+          "orderId": "3105265",
           "symbol": "XAUUSD",
           "currency": "USD",
           "volume": 10,
@@ -156,13 +156,13 @@
           "contractSize": 100,
           "units": 10,
           "unfilledVolume": null,
-          "openPrice": 4035.65,
-          "closePrice": 4037.92,
-          "currentPrice": 4037.92,
+          "openPrice": 4105.11,
+          "closePrice": 4105.93,
+          "currentPrice": 4105.93,
           "priceTrigger": null,
           "takeProfit": 0,
           "stopLoss": 0,
-          "profit": 22.7,
+          "profit": 8.2,
           "tickSize": 0,
           "tickValue": 0,
           "commission": null,
@@ -184,9 +184,9 @@
             1
           ],
           "profitMode": 4,
-          "comment": "wt|o:PyYqPj5P3IGU45VZZrVh-D",
+          "comment": "wt|o:n7ltjeDXf16HdelBBRad-D",
           "exitMethod": null,
-          "openTime": 1793798263000,
+          "openTime": 1793842200000,
           "closeTime": 0,
           "expiration": 0,
           "isEnable": true,

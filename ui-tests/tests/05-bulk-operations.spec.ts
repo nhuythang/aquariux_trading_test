@@ -5,6 +5,7 @@ import { ORDER_STATE, type Side } from '@src/domain/models';
 import { offsetPercent } from '@src/domain/price';
 import {
   bulkClose,
+  becomesTrue,
   bulkCloseBracketed,
   bulkDeletePending,
   placeOrder,
@@ -153,6 +154,44 @@ test.describe('Scope 5 – bulk close and bulk delete', () => {
       .filter((p) => p.profit < 0 && before.some((b) => b.orderId === p.orderId && b.profit < 0))
       .map((p) => p.orderId);
     expect(stillLosing, 'positions in loss were left open').toEqual([]);
+  });
+
+  test('BO-06 Bulk Close "Profitable Positions" closes only positions in profit @live', async ({
+    page,
+    trading,
+    orderPanel,
+    dialogs,
+    api,
+    created,
+    assets,
+    recorder,
+  }) => {
+    const ids = await openPositions({ page, trading, orderPanel, dialogs, api, created }, [
+      { symbol: instruments.primary, side: 'BUY' },
+      { symbol: instruments.secondary[0], side: 'SELL' },
+    ]);
+    // A fresh position starts in loss (the spread); one opposite pair usually moves into profit within a minute.
+    test.setTimeout(180_000); // up to 90 s of waiting for live P/L on top of the usual flow
+    const inProfit = await becomesTrue(async () => (await api.openPositions()).some((p) => p.profit > 0), 90_000);
+    // eslint-disable-next-line playwright/no-skipped-test
+    test.skip(!inProfit, 'No position moved into profit within 90 s; nothing to close for this option.');
+
+    const { before, result, after } = await bulkCloseBracketed(
+      { page, dialogs, api, openPositions: assets.openPositions },
+      'Profitable Positions',
+    );
+    recorder.add('bulkClose', { before, result, after });
+
+    const closed = result.closedOrderIds.map(String);
+    expect(closed.length, 'something was closed').toBeGreaterThan(0);
+    expect(ids).toEqual(expect.arrayContaining(closed));
+    const winningBefore = before.filter((p) => p.profit > 0).map((p) => p.orderId);
+    expect(winningBefore).toEqual(expect.arrayContaining(closed));
+
+    const stillWinning = after
+      .filter((p) => p.profit > 0 && before.some((b) => b.orderId === p.orderId && b.profit > 0))
+      .map((p) => p.orderId);
+    expect(stillWinning, 'positions in profit were left open').toEqual([]);
   });
 
   test('BO-04 Bulk Close with no open positions offers nothing to close @live', async ({ page, dialogs, assets }) => {

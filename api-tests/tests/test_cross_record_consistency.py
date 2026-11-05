@@ -105,15 +105,21 @@ def test_bo01_bulk_close_returns_distinct_ids(record):
     assert len(set(result.closedOrderIds)) == len(result.closedOrderIds)
 
 
-def test_bo03_loss_bulk_close_only_closes_positions_that_were_open(record):
-    snapshot = record("BO-03")["bulkClose"]
+@pytest.mark.parametrize(
+    ("test_id", "in_scope"), [("BO-03", lambda p: p < 0), ("BO-06", lambda p: p > 0)], ids=["loss", "profit"]
+)
+def test_bulk_close_by_pl_only_closes_matching_open_positions(record, test_id, in_scope):
+    """Loss / Profitable Positions: every closed position was open, and in loss / profit, right before the click."""
+    snapshot = record(test_id)["bulkClose"]
     result = BulkCloseResult.model_validate(snapshot["result"])
     before = {int(OpenPosition.model_validate(p).orderId) for p in snapshot["before"]}
     after = {int(OpenPosition.model_validate(p).orderId) for p in snapshot["after"]}
     closed = set(result.closedOrderIds)
-    assert closed, "Loss Positions closed nothing"
+    assert closed, "nothing was closed"
     assert closed <= before
     assert closed.isdisjoint(after)
+    matching = {int(p["orderId"]) for p in snapshot["before"] if in_scope(p["profit"])}
+    assert closed <= matching
 
 
 # --- trade endpoints: what each response says about the order it acted on -------------------------------
@@ -199,6 +205,11 @@ def test_sm01_primary_symbol_is_open_and_tradable(record):
     detail = SymbolDetail.model_validate(record("SM-01")["symbolDetail"])
     assert (detail.symbol, detail.status, detail.tradable, detail.tradableExeMode) == ("XAUUSD", "TRADING", True, True)
     assert {"MARKET", "LIMIT", "STOP", "STOP_LIMIT"} <= set(detail.orderTypes)
+
+
+def test_mo08_open_symbol_not_tradable_from_the_web(record):
+    detail = SymbolDetail.model_validate(record("MO-08")["symbolDetail"])
+    assert (detail.status, detail.tradableExeMode) == ("TRADING", False)
 
 
 def test_mc04_really_closed_symbol_reports_closed_flags(record):

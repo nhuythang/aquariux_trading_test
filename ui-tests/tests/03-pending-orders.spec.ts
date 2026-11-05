@@ -220,6 +220,39 @@ test.describe('Scope 3 – pending orders', () => {
     await expect(assets.pendingOrders.cell(placed.orderId, 'expiry-date')).toContainText(isoDay(expiryDate));
   });
 
+  test('PO-07c expiry "Specified Date and Time" keeps the chosen day and time @live', async ({
+    page,
+    orderPanel,
+    dialogs,
+    api,
+    created,
+    assets,
+    recorder,
+  }) => {
+    const expiryDate = daysFromNow(3);
+    await orderPanel.open();
+    const quote = await orderPanel.quote();
+    const placed = await placeOrder({ page, orderPanel, dialogs, api, created }, spec.symbol, {
+      side: 'BUY',
+      type: 'Limit',
+      volume: spec.minContractLotSize,
+      price: offsetPercent(quote.ask, -DISTANCE_PERCENT, spec),
+      expiry: 'Specified Date and Time',
+      expiryDate,
+    });
+
+    const order = await waitForPending(api, placed.orderId);
+    recorder.add('pending', order);
+    expect(order.tradeExpiry).toBe(expiryType['Specified Date and Time']);
+    // A timestamp on the chosen day, later than now.
+    expect(order.expiration).toBeGreaterThan(Date.now());
+    expect(isoDay(new Date(order.expiration))).toBe(isoDay(expiryDate));
+
+    await assets.pendingOrders.open();
+    await expect(assets.pendingOrders.cell(placed.orderId, 'expiry')).toHaveText('Specified Date and Time');
+    await expect(assets.pendingOrders.cell(placed.orderId, 'expiry-date')).toContainText(isoDay(expiryDate));
+  });
+
   test('PO-08 a past expiry date cannot be selected @live', async ({ orderPanel }) => {
     await orderPanel.open();
     await orderPanel.selectOrderType('Limit');

@@ -4,6 +4,7 @@ import { ORDER_TYPE, type Side, type SymbolDetail } from '@src/domain/models';
 import { formatPrice, marketPrice, nearlyEqual, offsetPoints } from '@src/domain/price';
 import { stopsOnCorrectSide } from '@src/domain/rules';
 import { requestsDuring } from '@src/api/capture';
+import { findWebRestrictedSymbol } from '@src/api/symbols';
 import { attemptInvalidSubmit, placeMarketWithStops, placeOrder, waitForPosition } from '@src/flows/orders';
 
 /** SL/TP distance from the market: far enough not to trigger during the test. */
@@ -172,5 +173,31 @@ test.describe('Scope 1 – market orders with Stop Loss and Take Profit', () => 
 
     expect(sent).toBe(0);
     expect((await api.counts()).marketOrderCounts).toBe(before.marketOrderCounts);
+  });
+
+  test('MO-08 a symbol that is open but not tradable from the web cannot be ordered (E10) @live', async ({
+    page,
+    api,
+    trading,
+    orderPanel,
+    recorder,
+  }) => {
+    // The backend flips tradableExeMode over time (GBPJPY became tradable on 2026-11-05), so the symbol is
+    // looked up. E10 needs an open market; on a weekend the closed-market rules apply instead (MC-*).
+    const symbol = await findWebRestrictedSymbol(api, instruments.notTradable);
+    // eslint-disable-next-line playwright/no-skipped-test
+    test.skip(!symbol, 'no open symbol is restricted from web trading right now');
+    const detail = await trading.selectSymbol(symbol!);
+    recorder.add('symbolDetail', detail);
+    expect(detail.status).toBe('TRADING');
+    expect(detail.tradableExeMode).toBe(false);
+
+    await orderPanel.open();
+    await orderPanel.fill({ side: 'BUY', type: 'Market', volume: detail.minContractLotSize });
+    await expect(orderPanel.submitButton).toHaveText(/stay tuned/i);
+    const sent = await requestsDuring(page, 'placeMarket', () =>
+      expect(orderPanel.submitButton.click({ timeout: 2_000 })).rejects.toThrow(),
+    );
+    expect(sent).toBe(0);
   });
 });

@@ -1,6 +1,6 @@
 {
   "testId": "MC-04",
-  "capturedAt": "2026-11-04T13:20:13.487Z",
+  "capturedAt": "2026-11-05T01:34:35.894Z",
   "records": {
     "symbolDetail": {
       "symbol": "USDJPY",
@@ -39,7 +39,7 @@
       "maxContractLotSize": 100,
       "lotSizeStep": 0.01,
       "pointStep": 0.001,
-      "marketEOD": 1793829600000,
+      "marketEOD": 1793842471000,
       "tradingSessions": [
         {
           "dayOfWeek": 1,
@@ -104,12 +104,12 @@
           "tradingEndTime": 1610141100000
         }
       ],
-      "ask": 157.885,
-      "bid": 157.855,
+      "ask": 158.093,
+      "bid": 158.063,
       "open": 157.855,
-      "high": 157.957,
-      "low": 157.736,
-      "lastUpdated": 1793693277,
+      "high": 158.416,
+      "low": 157.841,
+      "lastUpdated": 1793842472874,
       "status": "CLOSED",
       "marketStatus": null,
       "profile": null,
@@ -135,7 +135,7 @@
       },
       "maxQuoteDelay": 0,
       "exchangeRate": 1,
-      "quoteCurrencyExchangeRate": 0.006334927623451903,
+      "quoteCurrencyExchangeRate": 0.006329153981987228,
       "tickSize": 0,
       "tickValue": 0,
       "side": null,
@@ -166,7 +166,7 @@
       "enable": true,
       "tradable": false,
       "tradableExeMode": true,
-      "holiday": true,
+      "holiday": false,
       "sessionDiff": false,
       "closable": false,
       "watch": false,

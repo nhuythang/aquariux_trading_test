@@ -1,9 +1,9 @@
 {
   "testId": "PO-07b",
-  "capturedAt": "2026-11-04T13:15:20.231Z",
+  "capturedAt": "2026-11-05T01:27:10.120Z",
   "records": {
     "pending": {
-      "orderId": "2816367",
+      "orderId": "3105237",
       "symbol": "XAUUSD",
       "volume": 10,
       "lotSize": 0.1,
@@ -15,8 +15,8 @@
       "minContractLotSize": null,
       "openPrice": null,
       "closePrice": null,
-      "currentPrice": 4038.12,
-      "price": 3957.79,
+      "currentPrice": 4104.02,
+      "price": 4023.29,
       "takeProfit": 0,
       "stopLoss": 0,
       "profit": null,
@@ -31,10 +31,10 @@
         0,
         1
       ],
-      "comment": "wt|o:PPrxn1KdETwXTX99q968-D",
-      "openTime": 1793798118000,
+      "comment": "wt|o:zqo-N4L2gigsLGVLBhDe-D",
+      "openTime": 1793842029000,
       "closeTime": null,
-      "expiration": 1794002400000,
+      "expiration": 1794088800000,
       "isEnable": true,
       "priceTrigger": 0,
       "description": null,

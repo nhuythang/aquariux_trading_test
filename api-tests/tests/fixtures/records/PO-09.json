@@ -1,9 +1,9 @@
 {
   "testId": "PO-09",
-  "capturedAt": "2026-11-04T13:15:38.484Z",
+  "capturedAt": "2026-11-05T01:27:38.331Z",
   "records": {
     "pendingBefore": {
-      "orderId": "2816368",
+      "orderId": "3105239",
       "symbol": "XAUUSD",
       "volume": 10,
       "lotSize": 0.1,
@@ -15,8 +15,8 @@
       "minContractLotSize": null,
       "openPrice": null,
       "closePrice": null,
-      "currentPrice": 4036.39,
-      "price": 3955.86,
+      "currentPrice": 4100.88,
+      "price": 4018.76,
       "takeProfit": 0,
       "stopLoss": 0,
       "profit": null,
@@ -31,8 +31,8 @@
         0,
         1
       ],
-      "comment": "wt|o:IUmQwXqVcoA0qo5boLo4-D",
-      "openTime": 1793798133000,
+      "comment": "wt|o:TcahzoBmcoRsvNtyQhJz-D",
+      "openTime": 1793842054000,
       "closeTime": null,
       "expiration": 0,
       "isEnable": true,
@@ -55,13 +55,13 @@
       "trackable": true
     },
     "modifyPendingResponse": {
-      "positionId": "2816368",
-      "positionReference": "2816368",
-      "clOrdId": "2816368",
-      "traceId": "5e261411-58f8-4c97-b5e7-76a8a27e09dc"
+      "positionId": "3105239",
+      "positionReference": "3105239",
+      "clOrdId": "3105239",
+      "traceId": "984b2615-1ce9-4965-a593-5784b44058e4"
     },
     "pendingAfter": {
-      "orderId": "2816368",
+      "orderId": "3105239",
       "symbol": "XAUUSD",
       "volume": 10,
       "lotSize": 0.1,
@@ -73,10 +73,10 @@
       "minContractLotSize": null,
       "openPrice": null,
       "closePrice": null,
-      "currentPrice": 4036.15,
-      "price": 3915.49,
-      "takeProfit": 3954.64,
-      "stopLoss": 3876.34,
+      "currentPrice": 4102.44,
+      "price": 3977.76,
+      "takeProfit": 4017.54,
+      "stopLoss": 3937.98,
       "profit": null,
       "marginRate": 1,
       "indicate": "PRICE",
@@ -90,7 +90,7 @@
         1
       ],
       "comment": "",
-      "openTime": 1793798133000,
+      "openTime": 1793842054000,
       "closeTime": null,
       "expiration": 0,
       "isEnable": true,

@@ -1,15 +1,15 @@
 {
   "testId": "PO-10",
-  "capturedAt": "2026-11-04T13:15:51.042Z",
+  "capturedAt": "2026-11-05T01:27:52.451Z",
   "records": {
     "deletePendingResponse": {
-      "positionId": "2816369",
-      "positionReference": "2816369",
-      "clOrdId": "2816369",
-      "traceId": "ea1fb98a-78ea-4d01-8277-89c9291b24bd"
+      "positionId": "3105240",
+      "positionReference": "3105240",
+      "clOrdId": "3105240",
+      "traceId": "ccdd0f13-5592-4992-91a7-922dcb5844fc"
     },
     "cancelled": {
-      "orderId": "2816369",
+      "orderId": "3105240",
       "symbol": "XAUUSD",
       "volume": 1000,
       "volumeFilled": 0,
@@ -17,7 +17,7 @@
       "lotSizeFilled": 0,
       "units": 10,
       "decimal": 2,
-      "openPrice": 3954.73,
+      "openPrice": 4021,
       "takeProfit": 0,
       "stopLoss": 0,
       "orderType": 2,
@@ -27,8 +27,8 @@
       "deals": [],
       "symbolType": "COM",
       "remarks": null,
-      "openTime": 1793798145000,
-      "closeTime": 1793798147000,
+      "openTime": 1793842065000,
+      "closeTime": 1793842067000,
       "isEnable": true,
       "copyTradeInfo": null,
       "comment": null

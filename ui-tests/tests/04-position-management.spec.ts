@@ -2,6 +2,7 @@ import { expect, test } from '@src/fixtures/trading.fixture';
 import { instruments } from '@src/data/instruments';
 import { ORDER_TYPE, ORDER_STATE, type SymbolDetail } from '@src/domain/models';
 import { formatPrice, offsetPoints } from '@src/domain/price';
+import { requestsDuring } from '@src/api/capture';
 import {
   attemptPositionEdit,
   closePosition,
@@ -169,7 +170,7 @@ test.describe('Scope 4 – view, modify, partially close and close positions', (
     expect(closing).toMatchObject({ lotSize: half, state: ORDER_STATE.FILLED });
   });
 
-  test('PM-05 closing more than the position size is not possible @live', async ({
+  test('PM-05a closing more than the position size is not possible @live', async ({
     page,
     orderPanel,
     dialogs,
@@ -193,6 +194,36 @@ test.describe('Scope 4 – view, modify, partially close and close positions', (
     await dialogs.close.cancel();
 
     expect((await api.openPosition(placed.orderId))?.lotSize).toBe(spec.minContractLotSize);
+  });
+
+  test('PM-05b closing less than the minimum volume is not possible @live', async ({
+    page,
+    orderPanel,
+    dialogs,
+    api,
+    created,
+    assets,
+  }) => {
+    const volume = spec.minContractLotSize * 2;
+    const placed = await placeMarketWithStops(
+      { page, orderPanel, dialogs, api, created },
+      spec,
+      'BUY',
+      volume,
+      STOP_DISTANCE_POINTS,
+    );
+    await waitForPosition(api, placed.orderId);
+
+    await assets.openPositions.open();
+    await assets.openPositions.close(placed.orderId);
+    const sent = await requestsDuring(page, 'closePosition', async () => {
+      await dialogs.close.setVolume(spec.minContractLotSize / 2);
+      await expect(dialogs.close.confirmButton).toBeDisabled();
+    });
+    await dialogs.close.cancel();
+
+    expect(sent).toBe(0);
+    expect((await api.openPosition(placed.orderId))?.lotSize).toBe(volume);
   });
 
   test('PM-06 full close removes the position and records it in Positions History @live', async ({

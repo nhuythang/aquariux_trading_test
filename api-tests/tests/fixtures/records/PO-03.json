@@ -1,15 +1,15 @@
 {
   "testId": "PO-03",
-  "capturedAt": "2026-11-04T13:14:40.105Z",
+  "capturedAt": "2026-11-05T01:26:22.586Z",
   "records": {
     "placePendingResponse": {
       "positionId": "0",
       "positionReference": "0",
-      "clOrdId": "2816363",
-      "traceId": "08451be3-dec1-463e-a47e-09afd22ca59a"
+      "clOrdId": "3105233",
+      "traceId": "438ff8b7-640d-45a0-ac33-f5ac7eef04a6"
     },
     "pending": {
-      "orderId": "2816363",
+      "orderId": "3105233",
       "symbol": "XAUUSD",
       "volume": 10,
       "lotSize": 0.1,
@@ -21,8 +21,8 @@
       "minContractLotSize": null,
       "openPrice": null,
       "closePrice": null,
-      "currentPrice": 4042.39,
-      "price": 4123.35,
+      "currentPrice": 4108.25,
+      "price": 4190.72,
       "takeProfit": 0,
       "stopLoss": 0,
       "profit": null,
@@ -37,8 +37,8 @@
         0,
         1
       ],
-      "comment": "wt|o:YVCAlT9kvowNIj6PCqju-D",
-      "openTime": 1793798078000,
+      "comment": "wt|o:qY-HBxo8fs0xVdpGkgPk-D",
+      "openTime": 1793841981000,
       "closeTime": null,
       "expiration": 0,
       "isEnable": true,

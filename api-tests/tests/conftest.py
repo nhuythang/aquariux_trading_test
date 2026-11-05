@@ -28,6 +28,18 @@ def record(records: dict[str, RecordFile]) -> Callable[[str], dict]:
     def get(test_id: str) -> dict:
         if test_id not in records:
             pytest.skip(f"{test_id} was not recorded in {records_dir()}")
-        return records[test_id].records
+        return IncompleteRecordSkips(test_id, records[test_id].records)
 
     return get
+
+
+class IncompleteRecordSkips(dict):
+    """A UI test that fails part-way writes only the records it reached. Its failure is already reported by
+    Playwright, so a check needing a missing record is skipped with that reason instead of a bare KeyError."""
+
+    def __init__(self, test_id: str, data: dict) -> None:
+        super().__init__(data)
+        self.test_id = test_id
+
+    def __missing__(self, key: str):
+        pytest.skip(f"{self.test_id} recorded no {key!r}: the UI test stopped before that step")

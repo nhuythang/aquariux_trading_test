@@ -1,6 +1,6 @@
 {
   "testId": "SM-01",
-  "capturedAt": "2026-11-04T13:12:48.211Z",
+  "capturedAt": "2026-11-05T01:24:02.568Z",
   "records": {
     "symbolDetail": {
       "symbol": "XAUUSD",
@@ -39,7 +39,7 @@
       "maxContractLotSize": 100,
       "lotSizeStep": 0.1,
       "pointStep": 0.01,
-      "marketEOD": 1793829600000,
+      "marketEOD": 1793916000000,
       "tradingSessions": [
         {
           "dayOfWeek": 1,
@@ -104,12 +104,12 @@
           "tradingEndTime": 1610143200000
         }
       ],
-      "ask": 4043.04,
-      "bid": 4042.87,
-      "open": 3930.41,
-      "high": 4051.38,
-      "low": 3919.97,
-      "lastUpdated": 1793797966902,
+      "ask": 4115.51,
+      "bid": 4114.84,
+      "open": 4063.83,
+      "high": 4118.97,
+      "low": 4061.34,
+      "lastUpdated": 1793841841495,
       "status": "TRADING",
       "marketStatus": null,
       "profile": null,
@@ -150,7 +150,7 @@
       "priceType": null,
       "exerciseStyle": null,
       "lastPrice": null,
-      "prevClose": 3930.41,
+      "prevClose": 4061.8,
       "uniSymbol": null,
       "onePipEqual": null,
       "orderTypes": [

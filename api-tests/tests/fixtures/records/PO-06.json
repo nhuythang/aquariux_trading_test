@@ -1,6 +1,6 @@
 {
   "testId": "PO-06",
-  "capturedAt": "2026-11-04T13:15:03.878Z",
+  "capturedAt": "2026-11-05T01:26:49.998Z",
   "records": {
     "rejection": {
       "status": 400,
