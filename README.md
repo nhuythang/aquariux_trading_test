@@ -92,7 +92,7 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 | **REST client for setup, cleanup and reads.** `TraderApi` reuses the `Authorization: Bearer` header from the app's own requests and calls the same endpoints with `page.request`. | Tests verify UI actions, but read state and tidy up through the API: faster and independent of table rendering. No second login and no token handling in test code. |
 | **Login once.** A setup project logs in from `.env` and saves `storageState` (the session token lives in `localStorage`). | Saves time and keeps credentials out of every spec. |
 | **Typed config, fail fast.** `config/env.ts` loads `.env`; `BASE_URL` defaults to the demo site, and a missing `DEMO_USERNAME` / `DEMO_PASSWORD` stops the login setup with one clear message. | A missing variable fails in one clear line instead of a timeout deep in a test. |
-| **Two Playwright projects: `live` and `mocked`.** Mocked specs intercept only the endpoints they change. | Closed-market behaviour is tested on any day, independent of market hours. Both projects use the saved login; CI without secrets runs lint, unit tests and the Python checks on the committed samples. |
+| **Two Playwright projects: `live` and `mocked`.** Mocked specs intercept only the endpoints they change. | Closed-market behaviour is tested on any day, independent of market hours. Both projects use the saved login. Without a login, `make lint`, the unit tests and `make api-samples` (Python checks on the committed samples) still run. |
 | **Python validates what the UI tests captured.** The TS suite writes the records it saw to `artifacts/records/*.json`; pytest + pydantic checks schema, rules R2–R7 and cross-record links, and a guard suite proves each check rejects a deliberately broken record. | Decouples the two languages through a JSON contract instead of duplicating the UI flow. The same records feed both layers, so a mismatch found in Python points to a concrete test run. |
 | **No fixed waits.** Web-first assertions, `waitForResponse`, `expect.poll` for values that settle (P/L, counts). The one exception is HN-06, which must wait a fixed 3 s to show that nothing appears after a rejected order. | Live prices move every tick; polling with a tolerance is stable, sleeps are not. |
 
@@ -152,7 +152,6 @@ Each layer only depends on the layers below it. That keeps the specs short and r
 │   ├── test-cases.md
 │   └── assumptions.md
 ├── Makefile                           # make test: UI suite, then pytest on its records
-├── .github/workflows/ci.yml           # lint, unit tests, Python checks on samples (no secrets)
 └── .env.example
 ```
 
@@ -237,7 +236,8 @@ Summary below; details in [docs/assumptions.md](docs/assumptions.md).
 - Run the suite across Chromium, Firefox and WebKit
 - Add visual regression checks for the order ticket and positions grid
 - Call the trading API directly from Python once the token flow is understood, to add negative API tests the UI cannot reach
-- Isolate test data per run using a dedicated demo account per CI job
+- Run the suite in CI (GitHub Actions) with a dedicated demo account per job; this delivery is a local demo
+- Isolate test data per run using a dedicated demo account per worker
 
 ## 7. Git history
 

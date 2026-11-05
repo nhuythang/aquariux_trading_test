@@ -60,7 +60,7 @@ Source key: **Observed** = seen on the demo platform (UI or its own API response
 | I2 | "Order notifications" | The notification panel, **Positions** tab: "Position Created" / "Position Closed" | These are the order-related notifications the platform produces. SL/TP changes and pending orders produced none during exploration. |
 | I3 | "Supported order types and expiry options" | The lists the platform returns per symbol (`orderTypes`, `expirationTypes`) and shows in the UI | Coverage follows what the platform declares, not a generic list. |
 | I4 | "Bulk close or delete" | Bulk Close (All / Profitable / Loss) on positions, Bulk Delete on pending orders | Both exist in the UI. |
-| I5 | "If market close…" | Mocked tests for closed-market behaviour that run at any time, plus one live check skipped when no symbol is closed | Keeps the suite runnable at weekends and in CI. |
+| I5 | "If market close…" | Mocked tests for closed-market behaviour that run at any time, plus one live check skipped when no symbol is closed | Keeps the suite runnable at weekends and outside market hours. |
 
 ## 4. Known limitations
 
