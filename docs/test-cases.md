@@ -1,6 +1,6 @@
 # Test cases – Aquariux Web Trader
 
-Status: **implemented** (2026-11-04). Every case below has an automated test with the same ID (`ui-tests/tests/`, or `api-tests/` for CR-04); a/b/c suffixes are separate tests of one case.
+Status: **implemented** (2026-11-04; last full run 2026-11-05). Every case below has an automated test with the same ID (`ui-tests/tests/`, or `api-tests/` for CR-04); a/b/c suffixes are separate tests of one case.
 
 ## 1. Scope analysis
 

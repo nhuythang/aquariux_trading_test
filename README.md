@@ -6,7 +6,8 @@ Automated end-to-end and API-level tests for the **Aquariux Web Trader** demo pl
 - **API / data validation tests:** Python + pytest
 - **Platform in scope:** Web Trader only (desktop browser)
 
-> Status: <!-- TODO: update at end commit, e.g. "XX UI tests, YY API tests, all passing on 2026-11-05" -->
+> Status: all 48 test cases automated: 60 Playwright tests (51 `@live`, 3 `@mocked`, 6 unit) and 168 pytest checks.
+> Last full run on 2026-11-05: every UI test passed or skipped by design, pytest 166 passed / 2 skipped, account left empty.
 
 ---
 
@@ -221,16 +222,41 @@ Summary below; details in [docs/assumptions.md](docs/assumptions.md).
 
 - Tests target the demo environment only; results depend on its availability and on live market prices.
 - Order-type rules (SL/TP placement, pending price direction, expiry options, volume min/step) were inferred from the platform. Where the UI did not reveal a rule, the industry-standard rule was assumed and marked as such.
-- <!-- TODO: list instruments actually used, observed market hours, any features not available in the demo account -->
-- <!-- TODO: note any flaky areas observed (e.g. price feed latency) and how the tests handle them -->
+- **Instruments used:** XAUUSD for almost every live test; XAGUSD and XTIUSD where a netting account needs separate positions (bulk operations); any open symbol with `tradableExeMode: false` for MO-08 (GBPJPY on 2026-11-04, none on 2026-11-05); a symbol reporting `CLOSED` for MC-04. Specs (digits, lot min/step/max, stop level, order and expiry types) are read from `symbol/detail` at run time.
+- **Market hours:** FX and metals trade Mon–Fri only (XAUUSD 01:00–24:00 server time), and there is no crypto on the demo account, so `@live` tests need a weekday session. Closed-market behaviour is covered by `@mocked` tests that run at any time.
+- **Not available in the demo account:** crypto and 24/7 symbols; direct API access outside the browser (the Bearer token is issued in the app, E7); more than one account, so the suite runs serially (`workers: 1`).
+- **Conditional tests:** MO-08 skips when no open symbol is restricted from web trading, BO-06 skips when no position turns profitable within 90 s, and MC-04 skips when no symbol is closed. Each skip states its reason in the report.
+- **Flaky areas and how the tests handle them:**
+  - The app refetches its order lists for about 1.5 s after a trade, which can reset a dialog or swallow a click. Actions retry with `expect(...).toPass()`, text is typed key by key, and a close is never submitted twice.
+  - Live prices move every tick. Entry prices are compared with a spread-based tolerance, and P/L with `expect.poll`.
+  - The demo server is sometimes slow to list a new order (once more than 15 s), so waits for new positions and pending orders allow 30 s.
+  - Under sustained trading the server stopped creating notifications and refreshing the positions grid (seen on 2026-11-04). HN-01, HN-02, CR-01 and PM-04 then fail, report the outage correctly, and passed on the 2026-11-05 rerun.
 
 ## 6. Done, not done, and next steps
 
 ### Done
-<!-- TODO: fill at end commit -->
+- All 7 functional areas from the brief, plus market-closed behaviour, as 48 documented test cases, each with an automated test under the same ID ([docs/test-cases.md](docs/test-cases.md)).
+- A Playwright framework built around the app's own network traffic: page objects and dialog components, reusable flows, a REST client that reuses the app's auth header, and one ID followed through positions, pending orders, history, Orders & Deals and notifications.
+- Cleanup on a shared account: each test closes or deletes what it created (including orders it did not register), a leak fails the test that caused it, and `AC-00` / `AC-99` prove the account is empty before and after a run.
+- Market-closed tests that patch real responses instead of faking whole payloads, so they run on any day against the real app.
+- A Python layer (pydantic + pytest) that validates the schema, business rules and cross-record links of every captured response, a guard suite proving each check rejects a broken record, and scrubbed samples so it runs without a login.
+- One command for both layers (`make test`), lint for both languages, HTML reports, and documented assumptions (rules R1–R28, environment E1–E10).
+- Product findings, reported rather than hidden:
+  - A wrong-side Buy Limit is not blocked in the UI; the backend rejects it (400 `MT4_1009`).
+  - Invalid SL/TP or volume shows a message, but the submit / Update button stays enabled and does nothing.
+  - `NT_ORDER_CLOSE` notifications carry `metadata.openTime = -7200000`.
+  - Notification text drops trailing zeros ("@ 4,040.5").
+  - After a partial close, `realizedProfitLoss` holds only the last deal's profit.
+  - Order-type casing differs between Positions History and Orders & Deals, and the Orders & Deals volume ("0.1 / 0") has no label.
+  - Under sustained trading the server stops creating notifications.
 
 ### Not done (and why)
-<!-- TODO: fill at end commit, be explicit about trade-offs -->
+- **CI pipeline.** The delivery is a local demo (`make test`). `make lint`, the unit tests and `make api-samples` need no secrets and would be the first CI job.
+- **Parallel runs.** Bulk Close / Delete act on the whole account, so with one demo account the suite runs serially (about 12 minutes).
+- **Cross-browser and mobile.** Tests run on desktop Chromium only: the functional areas are the same in every browser, and the two days went to business coverage.
+- **Direct API tests from Python.** The Bearer token is issued in the browser (E7); reproducing it would mean reverse-engineering the login. Python validates the real responses the UI tests captured instead, so negative API cases the UI cannot send are not covered.
+- **Market-state dependent cases.** MO-08 and BO-06 depend on the server's flags and live P/L at run time. They skip with a reason instead of being forced, and have no committed sample records yet.
+- **Visual regression.** Not in scope for the brief; assertions are on values and records, not pixels.
 
 ### With more time I would
 - Run the suite across Chromium, Firefox and WebKit
